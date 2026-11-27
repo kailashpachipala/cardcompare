@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:,">
+<title>CardCompare — Which card is right for you?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --cream:#101014; --ink:#F5F1E8; --ink2:#A8A29A; --card:#1B1B21; --line:#2E2E36;
+  --panel:#23232B; --badge-bg:#FFFFFF;
+  --yellow:#FFD93D; --pink:#FFAFCC; --blue:#A2D2FF; --mint:#B9FBC0; --lav:#E7C6FF;
+  --mint-deep:#1E7A3C; --mint-bright:#4ADE80; --mint-soft:#1D3A26; --warn-bg:#2E2716; --warn-line:#8A6D2F;
+  --win-tint:#173423; --winner-bg:#FFF1A8; --tan:#C89B6A;
+  --shadow:0 6px 20px rgba(0,0,0,.45);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;font-weight:700}
+h1,h2,h3,.baloo{font-family:'Baloo 2','Nunito',sans-serif}
+button,[role="button"],select,input{min-height:44px}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:18px 16px 170px}
+.view{display:none}
+.view.active{display:block;animation:pop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.view.active{animation:none}.bar-fill{transition:none!important}}
+/* Header bits */
+.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);font-weight:900}
+h1.hero{font-size:34px;line-height:1.08;margin:6px 0 8px;font-weight:800}
+.sub{color:var(--ink2);font-size:15px;line-height:1.45;margin:0 0 16px}
+.teach{display:flex;gap:8px;margin:0 0 18px}
+.teach div{flex:1;border-radius:16px;padding:10px 12px;font-size:13px;line-height:1.35;color:#1A1714}
+.teach .g{background:var(--blue)}
+.teach .p{background:#FFB4A2}
+.teach b{display:block;font-family:'Baloo 2';font-size:14px}
+/* Scenario chips */
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.chip{border:2px solid transparent;border-radius:20px;padding:16px 14px;text-align:left;color:#1A1714;box-shadow:var(--shadow);min-height:96px}
+.chip:nth-child(odd){transform:rotate(-1deg)}
+.chip:nth-child(even){transform:rotate(1deg)}
+.chip:active{transform:scale(.97)}
+.chip .emoji{font-size:24px;display:block;margin-bottom:4px}
+.chip .t{font-family:'Baloo 2','Nunito',sans-serif;font-weight:800;font-size:17px;line-height:1.15;display:block}
+.chip .d{font-size:12px;color:rgba(26,23,20,.65);font-weight:800;display:block;margin-top:2px}
+.c-shop{background:var(--pink)} .c-food{background:var(--yellow)} .c-fuel{background:var(--blue)} .c-travel{background:var(--lav)} .c-upi{background:var(--mint)} .c-student{background:#FFD6A5} .c-bills{background:#C8F4DE} .c-flip{background:#FFC8DD}
+/* Black pill CTA */
+.cta{display:block;width:100%;background:#FAF7F0;color:#141210;border:none;border-radius:999px;padding:16px 20px;font-family:'Baloo 2';font-weight:800;font-size:18px;text-align:center;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.45)}
+.cta:active{transform:scale(.98)}
+.cta.secondary{background:#26262E;color:var(--ink);border:2px solid #3A3A44;box-shadow:none}
+.cta.small{font-size:15px;padding:12px 16px}
+.foot-note{text-align:center;color:var(--ink2);font-size:13px;margin:14px 4px 0;line-height:1.5}
+/* Spend rows */
+.spend-card{border-radius:var(--radius);padding:14px 14px 10px;margin-bottom:12px;box-shadow:var(--shadow);color:#1A1714}
+.spend-card .row1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.spend-card label{font-family:'Baloo 2';font-weight:800;font-size:17px}
+.spend-card .amt{display:flex;align-items:center;background:#fff;border-radius:999px;padding:2px 10px;border:2px solid rgba(0,0,0,.08)}
+.spend-card .amt span{font-weight:900}
+.spend-card input[type=number]{border:none;background:transparent;width:78px;font:inherit;font-weight:900;font-size:16px;text-align:right;min-height:36px;color:#1A1714}
+.spend-card input[type=number]:focus{outline:none}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:40px;min-height:40px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:rgba(20,18,16,.25)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;border-radius:50%;background:#FFFFFF;border:3px solid #141210;margin-top:-9px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+input[type=range]::-moz-range-track{height:10px;border-radius:999px;background:rgba(20,18,16,.25)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#FFFFFF;border:3px solid #141210;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.total-bar{position:sticky;top:8px;z-index:5;background:#FAF7F0;color:#141210;border-radius:999px;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;font-family:'Baloo 2';font-weight:800;margin-bottom:14px;box-shadow:var(--shadow)}
+.total-bar b{font-size:20px}
+.field{margin-bottom:14px}
+.field>label{display:block;font-family:'Baloo 2';font-weight:800;font-size:16px;margin-bottom:6px}
+select{width:100%;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:12px 14px;font:inherit;font-weight:800;font-size:16px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:900;font-size:14px;padding:10px 6px}
+.seg button.on{background:#FAF7F0;color:#141210;border-color:#FAF7F0}
+/* Result */
+.giant{text-align:center;padding:10px 0 4px}
+.giant .lbl{font-size:14px;color:var(--ink2);font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.giant .num{font-family:'Baloo 2';font-weight:800;font-size:56px;line-height:1;color:var(--mint-bright);margin:2px 0}
+.giant .per{font-weight:900;color:var(--ink2)}
+.warn{background:var(--warn-bg);border:2px solid var(--warn-line);border-radius:var(--radius);padding:14px 16px;margin:14px 0;font-size:14px;line-height:1.5}
+.warn b{font-family:'Baloo 2';font-size:16px}
+.ccard{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);position:relative}
+.ccard.winner{border-color:var(--mint-bright);background:var(--winner-bg);color:#1A1714}
+.ccard .role{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+.ccard h3{margin:4px 0 2px;font-size:21px;line-height:1.15}
+.ccard .bank{color:var(--ink2);font-size:13px;font-weight:800}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.badge{font-size:12px;font-weight:900;border-radius:999px;padding:5px 10px;background:var(--panel);border:1.5px solid var(--line);color:var(--ink)}
+.badge.net{background:#FAF7F0;color:#141210;border-color:#FAF7F0}
+.badge.upi{background:var(--mint);border-color:transparent;color:#1A1714}
+.badge.tag-keep{background:var(--mint);color:#1A1714;border-color:transparent}
+.badge.tag-up{background:var(--yellow);color:#1A1714;border-color:transparent}
+.badge.tag-shift{background:var(--pink);color:#1A1714;border-color:transparent}
+.badge.tag-mis{background:#FFD6A5;color:#1A1714;border-color:transparent}
+.badge.tier-free{background:var(--mint);color:#1A1714;border-color:transparent}
+.badge.tier-light{background:var(--blue);color:#1A1714;border-color:transparent}
+.badge.tier-premium{background:var(--lav);color:#1A1714;border-color:transparent}
+.badge.tier-super{background:var(--tan);color:#1A1714;border-color:transparent}
+.tier-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tier-row button{border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-weight:900;font-size:12.5px;padding:8px 12px;min-height:40px}
+.tier-row button.on{background:#FAF7F0;color:#141210;border-color:#FAF7F0}
+.tier-note{font-size:13px;color:var(--ink2);font-weight:800;line-height:1.45;margin:0 0 10px}
+.save-big{font-family:'Baloo 2';font-weight:800;font-size:30px;color:var(--mint-bright)}
+.save-big small{font-size:14px;color:var(--ink2);font-family:'Nunito';font-weight:900}
+.scenario{font-size:14px;line-height:1.45;background:var(--panel);border-radius:14px;padding:10px 12px;margin:10px 0 0}
+.facts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.fact{border-radius:14px;padding:8px 6px;text-align:center;background:var(--panel)}
+.fact b{display:block;font-size:15px}
+.fact span{font-size:11px;color:var(--ink2);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.f-fee{background:var(--pink)} .f-int{background:var(--yellow)} .f-net{background:var(--blue)}
+.fact{color:#1A1714}.fact span{color:rgba(26,23,20,.6)}
+.mismatch{font-size:13px;margin-top:8px;font-weight:800}
+details.allcards{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:6px 16px;margin-bottom:14px}
+details.allcards summary{font-family:'Baloo 2';font-weight:800;font-size:16px;padding:12px 0;cursor:pointer;min-height:44px}
+.rank-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1.5px dashed var(--line);font-size:14px}
+.rank-row .rn{font-weight:800}
+.rank-row .rs{font-weight:900;white-space:nowrap}
+.rank-row.neg .rs{color:#FF8A80}
+/* Compare */
+.cmp-scroll{overflow-x:auto;border-radius:20px}
+table.cmp{border-collapse:separate;border-spacing:0;width:100%;min-width:0;background:var(--card);border:2px solid var(--line);border-radius:20px;overflow:hidden}
+table.cmp th,table.cmp td{padding:10px 8px;font-size:13px;text-align:left;vertical-align:top;border-bottom:1.5px solid var(--line)}
+table.cmp th{font-family:'Baloo 2';font-size:13px}
+table.cmp td.win,table.cmp th.win{background:var(--win-tint)}
+table.cmp tr.decider td{font-weight:900;font-size:15px}
+table.cmp tr.decider td.win{color:var(--mint-bright)}
+table.cmp select{font-size:13px;padding:8px;border-radius:10px;min-height:40px}
+.bars{margin:16px 0}
+.bar-block{margin-bottom:14px}
+.bar-block .bl{font-weight:900;font-size:14px;margin-bottom:6px}
+.bar-track{background:#33333D;border-radius:999px;height:22px;overflow:hidden;margin-bottom:5px}
+.bar-fill{height:100%;border-radius:999px;width:0;transition:width .8s cubic-bezier(.34,1.3,.64,1)}
+.bar-fill.rew{background:#9A958C} .bar-fill.save{background:var(--mint-bright)}
+.bar-cap{font-size:12px;color:var(--ink2);font-weight:800}
+/* Final */
+.verdict{border-radius:26px;padding:22px 18px;text-align:center;margin-bottom:14px;color:#2A1A08;background:linear-gradient(135deg,#DCA964,var(--tan))}
+.verdict.keep,.verdict.upgrade,.verdict.shift{background:linear-gradient(135deg,#DCA964,var(--tan))}
+.verdict .vw{font-family:'Baloo 2';font-weight:800;font-size:44px;line-height:1}
+.verdict .vc{font-weight:900;font-size:16px;margin-top:4px}
+.why{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:6px 16px;margin-bottom:12px}
+.why li{margin:12px 0;font-size:15px;line-height:1.45}
+.info-card{border-radius:20px;padding:14px 16px;margin-bottom:12px;font-size:14px;line-height:1.5;color:#1A1714}
+.info-card b{font-family:'Baloo 2';font-size:15px;display:block;margin-bottom:2px}
+.ic-scen{background:var(--lav)} .ic-limit{background:var(--blue)} .ic-rule{background:var(--mint)}
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.btn-row .cta{flex:1}
+.toast{background:#FAF7F0;color:#141210;border-radius:14px;padding:12px 16px;text-align:center;font-weight:900;margin-top:12px;display:none}
+/* Explore */
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-family:'Baloo 2';font-weight:800;font-size:16px;padding:12px}
+.tabs button.on{background:#FAF7F0;color:#141210;border-color:#FAF7F0}
+.bank-tile{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px 16px;margin-bottom:10px}
+.bank-tile h3{margin:0 0 2px;font-size:18px}
+.type-tag{font-size:11px;font-weight:900;border-radius:999px;padding:4px 9px;text-transform:uppercase;letter-spacing:.04em}
+.type-tag.pub{background:var(--blue);color:#1A1714} .type-tag.pri{background:var(--pink);color:#1A1714}
+.bank-tile .mini{font-size:13px;color:var(--ink2);font-weight:800;margin-top:4px}
+.bank-tile a{color:var(--mint-bright);font-weight:900}
+.mini-card{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--cream);border-radius:14px;padding:10px 12px;margin-top:8px;font-size:14px;font-weight:800;width:100%;border:none;text-align:left;color:var(--ink)}
+.mini-card .mc-save{font-weight:900;white-space:nowrap}
+/* Card showcase (SBI-style presentation) */
+.showcase{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:14px;margin-bottom:16px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.showcase.winner{border-color:var(--mint-bright);background:var(--winner-bg);color:#1A1714}
+.img-panel{position:relative;background:var(--panel);border-radius:18px;padding:32px 12px 36px;overflow:hidden}
+.panel-badge{position:absolute;top:10px;left:10px;z-index:3;background:var(--badge-bg);color:#1A1714;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;padding:5px 10px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.panel-badge.mint{background:var(--mint);color:#1A1714}
+.cc-visual{position:relative;z-index:2;width:76%;max-width:300px;aspect-ratio:1.586;margin:4px auto 0;border-radius:14px;transform:rotate(-16deg);padding:12px 14px;color:#1A1714;display:flex;flex-direction:column;box-shadow:0 16px 26px rgba(0,0,0,.20)}
+.cc-visual.win-ring{box-shadow:0 0 0 3px var(--mint-bright),0 16px 26px rgba(0,0,0,.35)}
+.g-pink{background:linear-gradient(135deg,#FFC8DD 0%,#F77CA8 100%)}
+.g-yellow{background:linear-gradient(135deg,#FFE873 0%,#E8A90C 100%)}
+.g-blue{background:linear-gradient(135deg,#BDE0FE 0%,#5B9BD5 100%)}
+.g-lav{background:linear-gradient(135deg,#E7C6FF 0%,#A678E0 100%)}
+.g-mint{background:linear-gradient(135deg,#CFF7D4 0%,#57B368 100%)}
+.g-slice{background:linear-gradient(135deg,#A78BFA 0%,#6C2BD9 100%);color:#FFFFFF!important}
+.slice-note{font-size:13px;line-height:1.5;background:var(--warn-bg);border:1.5px solid var(--warn-line);border-radius:12px;padding:10px 12px;margin-top:10px;color:var(--ink)}
+.slice-strip{background:#2A1B4D;border:2px solid #8B5CF6;border-radius:20px;padding:14px 16px;margin:0 0 14px}
+.slice-strip b{font-family:'Baloo 2';font-size:16px}
+.slice-strip p{margin:6px 0 0;font-size:14px;line-height:1.5}
+.slice-strip button{background:#FAF7F0;color:#141210;border:none;border-radius:999px;padding:9px 16px;font-family:'Baloo 2';font-weight:800;font-size:14px;margin-top:10px;cursor:pointer}
+.cc-shadow{width:58%;height:20px;margin:2px auto 0;background:radial-gradient(ellipse at center,rgba(0,0,0,.30),rgba(0,0,0,0) 68%);border-radius:50%}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cc-bank{font-size:10.5px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;opacity:.72;line-height:1.25}
+.cc-net{font-family:'Baloo 2';font-weight:800;font-size:16px;line-height:1}
+.cc-mid{display:flex;align-items:center;gap:10px;margin-top:12px}
+.cc-chip{width:36px;height:26px;border-radius:6px;background:linear-gradient(145deg,#F7DC6F,#D4AC0D);border:1.5px solid rgba(0,0,0,.28);position:relative;flex:none}
+.cc-chip::after{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;background:rgba(0,0,0,.28)}
+.cc-waves{display:inline-flex;opacity:.85}
+.cc-name{margin-top:auto;font-family:'Baloo 2';font-weight:800;font-size:17px;line-height:1.12}
+.cc-sub{font-size:9.5px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;opacity:.65;margin-top:2px}
+.cmp-toggle{position:absolute;right:10px;bottom:10px;z-index:3;background:var(--badge-bg);color:#1A1714;border:1.5px solid rgba(0,0,0,.15);border-radius:999px;padding:9px 12px;font-size:12px;font-weight:900;display:inline-flex;gap:6px;align-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.cmp-toggle input{width:16px;height:16px;min-height:0;margin:0;accent-color:var(--mint-deep)}
+.sc-name{font-family:'Baloo 2';font-weight:800;font-size:22px;line-height:1.15;margin:14px 0 0}
+.sc-bank{color:var(--ink2);font-size:13px;font-weight:800;margin-top:2px}
+.benefits{list-style:none;margin:10px 0 0;padding:0}
+.benefits li{display:flex;gap:8px;font-size:14.5px;line-height:1.4;margin:7px 0}
+.benefits .tick{color:var(--mint-bright);font-weight:900;flex:none}
+.dash{border:none;border-top:2px dashed var(--line);margin:14px 0 12px}
+.kh-h{font-family:'Baloo 2';font-weight:800;font-size:14px;margin:0 0 8px}
+.kh-chips{display:flex;flex-wrap:wrap;gap:6px}
+.kh-chip{font-size:12px;font-weight:800;border:1.5px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--ink);background:var(--card)}
+.fee-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:800}
+.fee-bar b{font-size:15px}
+.fee-bar .fee-int{color:var(--ink2);font-size:12px;white-space:nowrap}
+.btn-row2{display:flex;gap:10px;margin-top:auto;padding-top:14px}
+.apply-btn{flex:1;background:#FAF7F0;color:#141210;border-radius:999px;padding:13px 8px;font-family:'Baloo 2';font-weight:800;font-size:14px;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;min-height:48px}
+.ben-btn{flex:1;background:#26262E;color:var(--ink);border:2px solid #3A3A44;border-radius:999px;padding:13px 8px;font-family:'Baloo 2';font-weight:800;font-size:14px;min-height:48px}
+.detail-area{display:none;margin-top:12px;background:var(--panel);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5}
+.detail-area.open{display:block;animation:pop .3s ease}
+.detail-area ul{margin:6px 0;padding-left:18px}
+.detail-area li{margin:5px 0}
+.showcase.compact{padding:12px}
+.showcase.compact .img-panel{padding:26px 10px 34px}
+.showcase.compact .cc-visual{width:60%}
+.showcase.compact .sc-name{font-size:19px;margin-top:12px}
+/* Bottom nav */
+.bottomnav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - 16px));background:#FAF7F0;border-radius:999px;display:flex;align-items:stretch;gap:2px;padding:6px;z-index:50;box-shadow:0 12px 30px rgba(0,0,0,.55)}
+.bottomnav button{flex:1;background:transparent;border:none;color:#141210;font-weight:900;font-size:11.5px;padding:10px 4px;border-radius:999px;min-height:48px;line-height:1.15}
+.bottomnav button.on{background:#E1DCD0}
+.section-h{font-size:24px;margin:4px 0 10px}
+.logo-tile{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;color:#fff;font-family:'Baloo 2';font-weight:800;font-size:13px;flex:none;letter-spacing:.02em;text-align:center;line-height:1.05;padding:4px}
+.bank-head{display:flex;gap:12px;align-items:center}
+.bank-head h3{flex:1}
+.catalog-list{margin-top:10px;border-top:1.5px dashed var(--line);padding-top:10px}
+.catalog-list .cl-h{font-family:'Baloo 2';font-weight:800;font-size:14px;margin:0 0 6px}
+.catalog-item{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.catalog-item .cn{font-weight:800}
+.catalog-item .cf{color:var(--ink2);font-weight:800;white-space:nowrap}
+.upi-line{font-size:13.5px;font-weight:800;background:var(--mint-soft);color:var(--ink);border-radius:12px;padding:9px 12px;margin-top:10px;line-height:1.45}
+.hero-panel{background:#141210;border-radius:20px;padding:38px 14px 42px;position:relative;overflow:hidden}
+.hero-panel .panel-badge{background:var(--mint);color:#1A1714}
+.hero-panel .cc-visual{width:92%;max-width:380px;transform:rotate(-8deg);padding:18px 20px}
+.hero-panel .cc-name{font-size:24px}
+.hero-panel .cc-bank{font-size:12px}
+.hero-panel .cc-net{font-size:22px}
+.hero-panel .cc-shadow{width:70%}
+.upi-pick-h{font-family:'Baloo 2';font-weight:800;font-size:20px;margin:18px 0 10px}
+.cat-tile{display:flex;gap:12px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px 12px;margin-bottom:10px}
+.cat-visual{width:92px;flex:none;aspect-ratio:1.586;border-radius:8px;transform:rotate(-8deg);padding:6px 8px;color:#1A1714;display:flex;flex-direction:column;box-shadow:0 8px 14px rgba(0,0,0,.18)}
+.cat-visual .cv-bank{font-size:7.5px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;opacity:.72;line-height:1.2}
+.cat-visual .cv-name{margin-top:auto;font-family:'Baloo 2';font-weight:800;font-size:10.5px;line-height:1.1}
+.cat-info{flex:1;min-width:0}
+.cat-info .cat-name{font-family:'Baloo 2';font-weight:800;font-size:15.5px;line-height:1.2}
+.cat-info .cat-fee{font-size:13px;color:var(--ink2);font-weight:800;margin-top:2px}
+.cat-info .cat-link{font-size:13px;font-weight:900;color:var(--mint-bright);text-decoration:none}
+.cat-label{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2)}
+.bank-toggle{width:100%;background:var(--panel);color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:11px 14px;font-family:'Baloo 2';font-weight:800;font-size:14px;margin-top:10px}
+.bank-body{display:none}
+.bank-body.open{display:block;animation:pop .3s ease}
+.upi-strip{background:var(--mint-soft);border:2px solid var(--mint-bright);border-radius:20px;padding:14px 16px;margin:0 0 14px}
+.upi-strip b{font-family:'Baloo 2';font-size:16px}
+.upi-strip p{margin:6px 0 0;font-size:14px;line-height:1.5}
+.hero-show{background:var(--winner-bg);border:3px solid var(--mint-bright);border-radius:26px;padding:22px 18px 18px;margin-bottom:14px;color:#1A1714;overflow:hidden}
+.hero-show .hero-save{font-family:'Baloo 2';font-weight:800;font-size:46px;line-height:1;color:#17753A;text-align:center;margin:6px 0 2px}
+.hero-show .hero-save-lbl{text-align:center;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:rgba(26,23,20,.55)}
+.hero-show .hero-name{font-family:'Baloo 2';font-weight:800;font-size:24px;line-height:1.15;margin:12px 0 2px;text-align:center}
+.hero-show .benefits li{color:#1A1714}
+.hero-show .cc-visual{box-shadow:0 0 0 3px var(--mint-bright),0 22px 40px rgba(0,0,0,.35)}
+.hero-show .upi-line{background:#D9FBE1;color:#1A1714}
+.logo-tile.sm{width:34px;height:34px;font-size:10px;border-radius:9px}
+.logo-tile.lg{width:54px;height:54px;font-size:15px;border-radius:14px}
+/* Redesign additions — reference design language */
+.verdict-pill{display:inline-block;background:linear-gradient(135deg,#DCA964,var(--tan));color:#2A1A08;font-weight:900;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:7px 16px;border-radius:999px}
+.col-tag{display:inline-block;font-size:9.5px;font-weight:900;letter-spacing:.05em;border-radius:999px;padding:3px 7px;margin:0 2px 5px 0;text-transform:uppercase}
+.col-tag.save{background:var(--mint-bright);color:#0E2413}
+.col-tag.rew{background:var(--blue);color:#12283F}
+.cmp-name{font-family:'Baloo 2';font-weight:800;font-size:13.5px;line-height:1.2}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:var(--ink2);margin-bottom:12px}
+.legend .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px}
+.legend .dot.rew{background:#9A958C}
+.legend .dot.save{background:var(--mint-bright)}
+.why-grid{display:grid;gap:10px;margin:20px 0 6px}
+.why-card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 16px}
+.why-card b{font-family:'Baloo 2';font-size:16px;display:block;margin-bottom:2px}
+.why-card span{font-size:13.5px;color:var(--ink2);line-height:1.45;display:block;font-weight:700}
+.steps{list-style:none;margin:10px 0 4px;padding:0;counter-reset:st}
+.steps li{counter-increment:st;position:relative;padding:8px 0 8px 46px;font-size:14.5px;line-height:1.45;color:var(--ink2)}
+.steps li b{color:var(--ink)}
+.steps li::before{content:counter(st);position:absolute;left:0;top:4px;width:32px;height:32px;border-radius:50%;background:#FAF7F0;color:#141210;font-family:'Baloo 2';font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
+.showcase.winner .sc-bank{color:rgba(26,23,20,.62)}
+.showcase.winner .img-panel{background:rgba(255,255,255,.5)}
+.showcase.winner .fee-bar{background:rgba(255,255,255,.55);color:#1A1714}
+.showcase.winner .fee-bar .fee-int{color:rgba(26,23,20,.6)}
+.showcase.winner .kh-chip{background:rgba(255,255,255,.5);border-color:rgba(26,23,20,.25);color:#1A1714}
+.showcase.winner .dash{border-top-color:rgba(26,23,20,.18)}
+.showcase.winner .detail-area{background:rgba(255,255,255,.55)}
+.showcase.winner .ben-btn{background:#141210;color:#FFFFFF;border-color:#141210}
+.showcase.winner .badge{background:rgba(255,255,255,.6);color:#1A1714;border-color:rgba(26,23,20,.2)}
+.showcase.winner .badge.net{background:#141210;color:#FFFFFF;border-color:#141210}
+.showcase.winner .badge.upi{background:var(--mint);color:#1A1714;border-color:transparent}
+.showcase.winner .upi-line{background:#D9FBE1;color:#1A1714}
+.showcase.winner .benefits .tick{color:#1E7A3C}
+.showcase.winner .mismatch{color:#7A2E0E}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ VIEW: HOME ============ -->
+  <section class="view active" id="view-home">
+    <div class="kicker">CardCompare · Beginner friendly</div>
+    <h1 class="hero">Which card is right for you?</h1>
+    <p class="sub">Tap your life. We check cards from India's 16 biggest banks against your spending — and give you ONE clear answer.</p>
+    <div class="teach">
+      <div class="g"><b>🏛️ Govt banks</b>Lower interest. Safer if you ever pay late.</div>
+      <div class="p"><b>🏢 Private banks</b>Higher interest, but bigger savings &amp; offers.</div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <button class="cta" id="btn-manual">Enter my spends myself →</button>
+    <p class="foot-note">16 Banks · Govt + Private · No sign-up<br>No CIBIL score. No name, phone or email. Ever.</p>
+    <div class="why-grid">
+      <div class="why-card"><b>🎯 One clear answer</b><span>Not a list of 50 cards — the one card that saves you the most, in plain words.</span></div>
+      <div class="why-card"><b>🔢 Real numbers</b><span>Fees and rates taken from official bank pages, scored on YOUR monthly spends.</span></div>
+      <div class="why-card"><b>🤫 No spam</b><span>No sign-up, no calls, no CIBIL score. Nothing about you is ever asked.</span></div>
+    </div>
+    <h3 class="baloo" style="font-size:20px;margin:18px 0 4px">How it works</h3>
+    <ol class="steps">
+      <li><b>Tell us how you spend</b> — five simple sliders, nothing personal.</li>
+      <li><b>We score every card</b> — 23 cards from 16 banks: rewards minus fee and interest.</li>
+      <li><b>Pick your winner</b> — then apply on the bank's own official site.</li>
+    </ol>
+  </section>
+
+  <!-- ============ VIEW: SPENDING ============ -->
+  <section class="view" id="view-spend">
+    <div class="kicker">Step 1 of 1</div>
+    <h2 class="section-h baloo">Your spending</h2>
+    <div class="total-bar"><span>Total / month</span><b id="total-live">₹25,000</b></div>
+    <div id="spend-rows"></div>
+    <div class="field">
+      <label for="bank-select">Your bank — where do you have an account?</label>
+      <select id="bank-select"></select>
+      <div id="bank-brand-preview" style="margin-top:8px"></div>
+    </div>
+    <div class="field" id="present-field">
+      <label for="present-select">Your present credit card</label>
+      <select id="present-select"></select>
+    </div>
+    <div class="field" id="other-bank-note" style="display:none">
+      <div class="warn" style="margin:0"><b>Your bank is not in our 16 yet</b><br>We will still find your best card overall from the 16 biggest banks.</div>
+    </div>
+    <div class="field">
+      <label>Approx annual income</label>
+      <div class="seg" id="income-seg">
+        <button type="button" data-inc="low">Below ₹3L</button>
+        <button type="button" data-inc="mid" class="on">₹3–10L</button>
+        <button type="button" data-inc="high">Above ₹12L</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Do you pay the FULL bill every month?</label>
+      <div class="seg" id="pay-seg">
+        <button type="button" data-pay="yes" class="on">Yes, full bill ✅</button>
+        <button type="button" data-pay="no">Not always</button>
+      </div>
+    </div>
+    <button class="cta" id="btn-show">Show My Card →</button>
+    <p class="foot-note">9 small answers. Nothing else is asked.</p>
+  </section>
+
+  <!-- ============ VIEW: RESULT ============ -->
+  <section class="view" id="view-result">
+    <div class="kicker">Your result</div>
+    <div style="text-align:center;margin-top:6px"><span class="verdict-pill" id="result-verdict">Your answer</span></div>
+    <h2 class="baloo" style="text-align:center;font-size:27px;margin:10px 0 0">Your best card is</h2>
+    <div class="giant">
+      <div class="lbl">You can save</div>
+      <div class="num" id="giant-num">₹0</div>
+      <div class="per">every year, with the right card</div>
+    </div>
+    <div id="result-warn"></div>
+    <div id="result-cards"></div>
+    <div id="result-upi"></div>
+    <div id="result-slice"></div>
+    <details class="allcards" id="allcards-box">
+      <summary>See all cards — full ranking</summary>
+      <div class="seg" style="margin:4px 0 10px">
+        <button type="button" id="all-filter-all" class="on">All cards</button>
+        <button type="button" id="all-filter-upi">📱 Best for UPI</button>
+      </div>
+      <p class="tier-note">New to cards or on a smaller salary? Start with ₹0 Free and Light — no or low yearly fee.</p>
+      <div class="tier-row" id="all-tier-row" role="group" aria-label="Filter by fee tier">
+        <button type="button" data-tier-all="all" class="on">All</button>
+        <button type="button" data-tier-all="free">₹0 Free</button>
+        <button type="button" data-tier-all="light">Light</button>
+        <button type="button" data-tier-all="premium">Premium</button>
+        <button type="button" data-tier-all="super">Super Premium</button>
+      </div>
+      <div id="allcards-list"></div>
+    </details>
+    <button class="cta" id="btn-to-compare">Compare these cards →</button>
+    <button class="cta secondary small" id="btn-edit-spends" style="margin-top:10px">Change my spends</button>
+  </section>
+
+  <!-- ============ VIEW: COMPARE ============ -->
+  <section class="view" id="view-compare">
+    <div class="kicker">Side by side</div>
+    <h2 class="section-h baloo">Compare</h2>
+    <div id="cmp-pickers"></div>
+    <div class="cmp-scroll"><table class="cmp" id="cmp-table"></table></div>
+    <div class="bars" id="cmp-bars"></div>
+    <button class="cta" id="btn-to-final">See my final answer →</button>
+  </section>
+
+  <!-- ============ VIEW: FINAL ============ -->
+  <section class="view" id="view-final">
+    <div class="kicker">Your final answer</div>
+    <div id="final-body"></div>
+  </section>
+
+  <!-- ============ VIEW: EXPLORE ============ -->
+  <section class="view" id="view-explore">
+    <div class="kicker">16 biggest banks</div>
+    <h2 class="section-h baloo">Explore banks</h2>
+    <div class="tabs">
+      <button type="button" id="tab-pub" class="on">🏛️ Government (7)</button>
+      <button type="button" id="tab-pri">🏢 Private (9)</button>
+    </div>
+    <div class="seg" style="margin-bottom:10px">
+      <button type="button" id="filter-all" class="on">All cards</button>
+      <button type="button" id="filter-upi">📱 Best for UPI</button>
+    </div>
+    <p class="tier-note">New to cards or on a smaller salary? Start with ₹0 Free and Light — no or low yearly fee.</p>
+    <div class="tier-row" id="exp-tier-row" role="group" aria-label="Filter by fee tier">
+      <button type="button" data-tier-exp="all" class="on">All</button>
+      <button type="button" data-tier-exp="free">₹0 Free</button>
+      <button type="button" data-tier-exp="light">Light</button>
+      <button type="button" data-tier-exp="premium">Premium</button>
+      <button type="button" data-tier-exp="super">Super Premium</button>
+    </div>
+    <p class="sub" id="upi-filter-note" style="display:none">Showing only RuPay cards that link to GPay / PhonePe and earn on UPI. Debit-card UPI earns ₹0.</p>
+    <div id="bank-list"></div>
+    <div id="slice-spotlight" style="margin-top:26px">
+      <div class="kicker">Special · Not one of the 16 banks</div>
+      <h3 class="baloo" style="font-size:24px;margin:4px 0 6px">🎓 Student Favourite</h3>
+      <p class="sub" style="margin-bottom:12px">A student favourite outside the 16 biggest banks — shown separately, not scored in the rankings.</p>
+      <div class="showcase" id="slice-spotlight-tile">
+        <div class="img-panel"><span class="panel-badge mint">🎓 STUDENT FAVOURITE</span>
+          <div class="cc-visual g-slice" role="img" aria-label="slice UPI Credit Card visual, RuPay network">
+            <div class="cc-top"><span class="cc-bank">slice Small Finance Bank</span><span class="cc-net">RuPay</span></div>
+            <div class="cc-mid"><span class="cc-chip"></span><span class="cc-waves"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5.5 9.5a7 7 0 0 1 0 5"/><path d="M9.5 7a11 11 0 0 1 0 10"/><path d="M13.5 4.5a15.5 15.5 0 0 1 0 15"/></svg></span></div>
+            <div class="cc-name">slice UPI</div><div class="cc-sub">Credit Card</div>
+          </div><div class="cc-shadow"></div>
+        </div>
+        <div class="bank-head" style="margin-top:14px"><span class="logo-tile" style="background:#6C2BD9;font-size:11px" aria-hidden="true">slice</span><div><h3 class="sc-name" style="margin:0">slice UPI Credit Card</h3><div class="sc-bank">slice Small Finance Bank · Everyday &amp; UPI</div></div></div>
+        <div class="badges" style="margin:10px 0 0"><span class="badge tier-free">₹0 FREE</span><span class="badge upi">📱 UPI Ready</span><span class="badge net">RuPay</span></div>
+        <ul class="benefits">
+          <li><span class="tick">✓</span><span>1% cashback (monies) on everyday spends</span></li>
+          <li><span class="tick">✓</span><span>Pay in 3 for free — split purchases of ₹2,000+ into 3 parts, no extra cost</span></li>
+          <li><span class="tick">✓</span><span>₹0 forex markup — no extra charge on international spends</span></li>
+        </ul>
+        <div class="upi-line">📱 UPI: link this RuPay card to GPay / PhonePe — scan &amp; pay and earn on UPI. Debit-card UPI earns ₹0. Up to 46 days interest-free when you pay in full.</div>
+        <div class="slice-note">You need a slice savings account (free, full KYC). Approval depends on Slice's checks — income details are asked, so approval is not guaranteed.</div>
+        <hr class="dash">
+        <div class="fee-bar"><span>Annual Fee: <b>Lifetime Free</b></span><span class="fee-int">Interest <b>42%</b>/yr</span></div>
+        <div class="btn-row2"><a class="apply-btn" href="https://slice.bank.in/credit-card" target="_blank" rel="noopener">APPLY ON SLICE SITE →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot-note" style="margin-top:22px">Rates last verified Nov 2026 — confirm on the official bank site before applying.<br>No personal data, no CIBIL score, ever.</p>
+</div>
+
+<nav class="bottomnav" aria-label="Main">
+  <button type="button" data-nav="home" class="on">🏠 Home</button>
+  <button type="button" data-nav="explore">🏦 Banks</button>
+  <button type="button" class="centre" data-nav="spend">Find My Card</button>
+  <button type="button" data-nav="compare">⚖️ Compare</button>
+  <button type="button" data-nav="result">⭐ Result</button>
+</nav>
+
+<script>
+/* ================= DATA ================= */
+var BANKS = [
+ {id:"sbi",name:"SBI Card",type:"public",color:"#22409A",ini:"SBI",portal:"https://www.sbicard.com/en/personal/credit-cards.html"},
+ {id:"bob",name:"BOBCARD (Bank of Baroda)",type:"public",color:"#ED7522",ini:"BOB",portal:"https://www.bobcard.co.in/credit-card-types"},
+ {id:"pnb",name:"Punjab National Bank",type:"public",color:"#98002E",ini:"PNB",portal:"https://creditcard.pnb.bank.in/types.html"},
+ {id:"canara",name:"Canara Bank",type:"public",color:"#0072BC",ini:"CAN",portal:"https://www.canarabank.bank.in/credit-cards"},
+ {id:"union",name:"Union Bank of India",type:"public",color:"#0057A8",ini:"UBI",portal:"https://www.unionbankofindia.bank.in/en/listing/credit-cards"},
+ {id:"boi",name:"Bank of India",type:"public",color:"#E87722",ini:"BOI",portal:"https://bankofindia.bank.in/credit-card"},
+ {id:"cbi",name:"Central Bank of India",type:"public",color:"#00539B",ini:"CBI",portal:"https://centralbank.bank.in/en/credit-cards"},
+ {id:"hdfc",name:"HDFC Bank",type:"private",color:"#004C8F",ini:"HDFC",portal:"https://www.hdfc.bank.in/credit-cards"},
+ {id:"icici",name:"ICICI Bank",type:"private",color:"#F58220",ini:"ICICI",portal:"https://www.icici.bank.in/personal-banking/cards/credit-card"},
+ {id:"axis",name:"Axis Bank",type:"private",color:"#97144D",ini:"AXIS",portal:"https://www.axis.bank.in/retail/cards/credit-card"},
+ {id:"kotak",name:"Kotak Mahindra Bank",type:"private",color:"#ED232A",ini:"KOTAK",portal:"https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html"},
+ {id:"idfc",name:"IDFC FIRST Bank",type:"private",color:"#A6192E",ini:"IDFC",portal:"https://www.idfcfirst.bank.in/credit-card"},
+ {id:"rbl",name:"RBL Bank",type:"private",color:"#1B365D",ini:"RBL",portal:"https://www.rbl.bank.in/personal-banking/cards/credit-cards"},
+ {id:"yesbank",name:"YES BANK",type:"private",color:"#00518F",ini:"YES",portal:"https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards"},
+ {id:"indusind",name:"IndusInd Bank",type:"private",color:"#7B211F",ini:"IND",portal:"https://www.indusind.bank.in/in/en/personal/cards/credit-card.html"},
+ {id:"karur",name:"Karur Vysya Bank",type:"private",color:"#00539F",ini:"KVB",portal:"https://www.kvb.bank.in/personal/cards/kvb-credit-cards/"}
+];
+var BANK_FALLBACK = {federal:{id:"federal",name:"Federal Bank",type:"private",color:"#003087",ini:"FED",portal:"https://www.federalbank.co.in/"}};
+/* rates: [shopping, dining, fuel, travel, everyday] */
+var CARDS = [
+ {id:"sbi-cashback",bank:"sbi",name:"Cashback SBI Card",network:"Visa",category:"Online Shopping & Cashback",fee:999,waiver:200000,apr:42,rates:[.05,.01,0,.05,.01],cap:5000,minInc:300000,fd:0,upi:false,url:"https://www.sbicard.com/en/personal/credit-cards.html"},
+ {id:"sbi-simplyclick",bank:"sbi",name:"SimplyCLICK SBI Card",network:"Visa",category:"Starter & Online Shopping",fee:499,waiver:100000,apr:42,rates:[.025,.0125,0,.0125,.005],cap:2500,minInc:250000,fd:0,upi:false,url:"https://www.sbicard.com/en/personal/credit-cards.html"},
+ {id:"sbi-bpcl-octane",bank:"sbi",name:"BPCL SBI Card Octane",network:"Visa",category:"Fuel & Commute",fee:1499,waiver:200000,apr:42,rates:[.01,.025,.0625,.01,.025],cap:2500,minInc:300000,fd:0,upi:false,url:"https://www.sbicard.com/en/personal/credit-cards.html"},
+ {id:"hdfc-millennia",bank:"hdfc",name:"HDFC Millennia Credit Card",network:"Visa",category:"Online Shopping & Cashback",fee:1000,waiver:100000,apr:45,rates:[.05,.05,0,.01,.01],cap:1000,minInc:300000,fd:0,upi:false,url:"https://www.hdfc.bank.in/credit-cards/millennia-credit-card/fees-and-charges"},
+ {id:"hdfc-regalia-gold",bank:"hdfc",name:"HDFC Regalia Gold Credit Card",network:"Visa",category:"Travel & Lifestyle",fee:2500,waiver:400000,apr:45,rates:[.0133,.0133,0,.0133,.0133],cap:99999,minInc:1200000,fd:0,upi:false,url:"https://www.hdfc.bank.in/credit-cards"},
+ {id:"hdfc-swiggy",bank:"hdfc",name:"Swiggy HDFC Bank Credit Card",network:"Visa",category:"Online Shopping & Cashback",fee:500,waiver:200000,apr:45,rates:[.05,.10,0,.01,.01],cap:1500,minInc:300000,fd:0,upi:false,url:"https://www.hdfc.bank.in/credit-cards"},
+ {id:"hdfc-tataneu-infinity",bank:"hdfc",name:"Tata Neu Infinity HDFC Bank Credit Card",network:"RuPay",category:"Everyday & UPI",fee:1499,waiver:300000,apr:45,rates:[.02,.015,0,.015,.03],cap:2000,minInc:600000,fd:0,upi:true,url:"https://www.hdfc.bank.in/credit-cards"},
+ {id:"icici-amazon-pay",bank:"icici",name:"Amazon Pay ICICI Bank Credit Card",network:"Visa",category:"Online Shopping & Lifetime Free",fee:0,waiver:0,apr:45,rates:[.05,.01,.01,.01,.01],cap:99999,minInc:300000,fd:0,upi:false,url:"https://www.icici.bank.in/personal-banking/cards/credit-card"},
+ {id:"icici-coral",bank:"icici",name:"ICICI Bank Coral Credit Card",network:"RuPay",category:"Everyday & UPI",fee:500,waiver:150000,apr:45,rates:[.005,.005,0,.005,.005],cap:99999,minInc:300000,fd:0,upi:true,url:"https://www.icici.bank.in/personal-banking/cards/credit-card"},
+ {id:"axis-ace",bank:"axis",name:"Axis Bank ACE Credit Card",network:"Visa",category:"Everyday Bills & Cashback",fee:499,waiver:200000,apr:52.86,rates:[.02,.04,0,.01,.02],cap:99999,minInc:300000,fd:0,upi:false,url:"https://www.axis.bank.in/cards/credit-card"},
+ {id:"axis-flipkart",bank:"axis",name:"Flipkart Axis Bank Credit Card",network:"Visa",category:"Online Shopping & Cashback",fee:500,waiver:350000,apr:43.2,rates:[.05,.04,0,.05,.01],cap:99999,minInc:300000,fd:0,upi:false,url:"https://www.axis.bank.in/cards/credit-card"},
+ {id:"bob-eterna",bank:"bob",name:"BOBCARD Eterna Credit Card",network:"Visa",category:"Travel & Lifestyle",fee:2499,waiver:800000,apr:39,rates:[.015,.015,0,.015,.015],cap:99999,minInc:1200000,fd:0,upi:false,url:"https://www.bobcard.co.in/"},
+ {id:"pnb-rupay-platinum",bank:"pnb",name:"PNB RuPay Platinum Credit Card",network:"RuPay",category:"First Card & UPI",fee:0,waiver:0,apr:35.4,rates:[.005,.005,0,.005,.005],cap:99999,minInc:250000,fd:0,upi:true,url:"https://creditcard.pnb.bank.in/types5.html"},
+ {id:"union-rupay-select",bank:"union",name:"Union Bank RuPay Select Credit Card",network:"RuPay",category:"Travel & Everyday UPI",fee:499,waiver:100000,apr:35.4,rates:[.01,.01,0,.01,.01],cap:99999,minInc:300000,fd:0,upi:true,url:"https://www.unionbankofindia.bank.in/en/listing/credit-cards"},
+ {id:"canara-rupay-platinum",bank:"canara",name:"Canara Bank RuPay Platinum Credit Card",network:"RuPay",category:"First Card & Low Interest",fee:0,waiver:0,apr:30,rates:[.005,.005,0,.005,.005],cap:99999,minInc:250000,fd:0,upi:true,url:"https://www.canarabank.bank.in/credit-cards"},
+ {id:"boi-rupay-platinum",bank:"boi",name:"BOI RuPay Platinum Credit Card",network:"RuPay",category:"First Card & Everyday",fee:0,waiver:0,apr:30,rates:[.005,.005,0,.005,.005],cap:99999,minInc:250000,fd:0,upi:true,url:"https://bankofindia.bank.in/credit-card"},
+ {id:"cbi-aspire",bank:"cbi",name:"Central Bank Visa Aspire Credit Card",network:"Visa",category:"First Card / FD-Secured",fee:0,waiver:0,apr:18,rates:[.005,.005,0,.005,.005],cap:99999,minInc:0,fd:10000,upi:false,url:"https://centralbank.bank.in/en/credit-cards"},
+ {id:"kotak-league-platinum",bank:"kotak",name:"Kotak League Platinum Credit Card",network:"Visa",category:"Everyday & Movies",fee:499,waiver:0,apr:40,rates:[.01,.01,0,.01,.01],cap:99999,minInc:300000,fd:0,upi:false,url:"https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html"},
+ {id:"idfc-millennia",bank:"idfc",name:"IDFC FIRST Millennia Credit Card",network:"Visa",category:"Lifetime Free & Everyday",fee:0,waiver:0,apr:30,rates:[.015,.015,0,.015,.015],cap:99999,minInc:300000,fd:0,upi:true,url:"https://www.idfcfirst.bank.in/credit-card"},
+ {id:"idfc-wow",bank:"idfc",name:"IDFC FIRST WOW! Credit Card",network:"RuPay",category:"First Card / FD-Secured",fee:0,waiver:0,apr:30,rates:[.0067,.0067,0,.0067,.0067],cap:99999,minInc:0,fd:10000,upi:true,url:"https://www.idfcfirst.bank.in/credit-card/wow"},
+ {id:"federal-scapia",bank:"federal",name:"Scapia Federal Bank Credit Card",network:"RuPay",category:"Lifetime Free & Travel",fee:0,waiver:0,apr:41.9,rates:[.01,.01,0,.04,.01],cap:99999,minInc:300000,fd:0,upi:true,url:"https://www.federalbank.co.in/"},
+ {id:"yes-kiwi",bank:"yesbank",name:"Kiwi YES BANK RuPay Credit Card",network:"RuPay",category:"Everyday & UPI",fee:0,waiver:0,apr:47.9,rates:[.005,.015,0,.005,.015],cap:99999,minInc:250000,fd:0,upi:true,url:"https://www.yes.bank.in/"},
+ {id:"rbl-indianoil-xtra",bank:"rbl",name:"IndianOil RBL Bank XTRA Credit Card",network:"Visa",category:"Fuel & Commute",fee:1500,waiver:275000,apr:47.9,rates:[.005,.005,.05,.005,.01],cap:1000,minInc:300000,fd:0,upi:false,url:"https://www.rbl.bank.in/"}
+];
+/* Catalog-only cards: [name, verified annual fee ₹ or null, chip or null]. Listed, never scored. */
+var CATALOG = {
+sbi:[["CASHBACK SBI Card",999,null],["SBI Card ELITE",4999,null],["SimplyCLICK SBI Card",499,null],["SBI Card PRIME",2999,null],["SBI Card Miles Elite",4999,null],["SimplySAVE SBI Card",499,null],["SBI Card PULSE",1499,null],["Aurum SBI Card",9999,null],["IndiGo SBI Card ELITE",4999,null],["KrisFlyer SBI Card",2999,null],["KrisFlyer SBI Card Apex",9999,null],["SBI Card MILES PRIME",2999,null],["Titan SBI Card",2999,null],["Reliance SBI Card PRIME",2999,null],["Landmark Rewards SBI Card PRIME",2999,null],["Club Vistara SBI Card PRIME",2999,null],["Air India SBI Signature Card",4999,null],["Tata Card SELECT",2999,null],["Tata Neu Plus SBI Card",499,null],["Tata Neu Infinity SBI Card",1499,null],["Doctor's SBI Card (IMA)",1499,null],["Doctor's SBI Card",1499,null],["Google Pay Flex SBI Card",499,null],["PhonePe SBI Card PURPLE",499,null],["PhonePe SBI Card SELECT BLACK",1499,null],["Apollo SBI Card SELECT",1499,null],["Paytm SBI Card SELECT",1499,null],["Paytm SBI Card",499,null],["Shaurya Select SBI Card",1499,null],["Shaurya SBI Card",250,null],["Apollo SBI Card",499,null],["Flipkart SBI Card",500,null],["ETERNAL SBI Card",499,null],["Reliance SBI Card",499,null],["Landmark Rewards SBI Card",499,null],["Landmark Rewards SBI Card SELECT",1499,null],["Tata Card",499,null],["SBI Card Unnati",0,"Free first 4 years"],["IndiGo SBI Card",1499,null],["IRCTC SBI Premier Card",1499,null],["SBI Card MILES",1499,null],["BPCL SBI Card",499,null],["BPCL SBI Card OCTANE",1499,null],["IRCTC SBI Platinum Card",500,null],["Club Vistara SBI Card",1499,null],["Air India SBI Platinum Card",1499,null]],
+sbiPartner:[["Bank of Maharashtra SimplySAVE SBI Card",499,"SBI Partner Card"],["Bank of Maharashtra SBI Card ELITE",4999,"SBI Partner Card"],["Bank of Maharashtra SBI Card PRIME",2999,"SBI Partner Card"],["UCO Bank SBI Card ELITE",4999,"SBI Partner Card"],["PSB SimplySAVE SBI Card",499,"SBI Partner Card"],["PSB SBI Card ELITE",4999,"SBI Partner Card"],["PSB SBI Card PRIME",2999,"SBI Partner Card"],["UCO Bank SBI Card PRIME",2999,"SBI Partner Card"],["City Union Bank SBI Card PRIME",2999,"SBI Partner Card"],["Karnataka Bank SBI Card PRIME",2999,"SBI Partner Card"],["Karnataka Bank SimplySAVE SBI Card",499,"SBI Partner Card"],["South Indian Bank SimplySAVE SBI Card",499,"SBI Partner Card"],["South Indian Bank SBI Card PRIME",2999,"SBI Partner Card"],["South Indian Bank SBI Platinum Card",2999,"SBI Partner Card"],["City Union Bank SimplySAVE SBI Card",499,"SBI Partner Card"],["UCO Bank SimplySAVE SBI Card",499,"SBI Partner Card"],["KVB SimplySAVE SBI Card",499,"SBI Partner Card"],["KVB SBI Card PRIME",2999,"SBI Partner Card"],["KVB SBI Platinum Card",2999,"SBI Partner Card"],["KVB SBI Signature Card",4999,"SBI Partner Card"],["Karur Vysya Bank SBI Card",499,"SBI Partner Card"],["KVB SBI Card ELITE",4999,"SBI Partner Card"]],
+hdfc:[["PIXEL Play Credit Card",null,"Lifetime Free"],["PIXEL Go Credit Card",null,"Lifetime Free"],["HDFC UPI RuPay Credit Card",null,"Lifetime Free"],["HDFC Millennia Credit Card",null,null],["HDFC Millenia Credit Card",null,null],["HDFC Freedom Credit Card",null,null],["HDFC MoneyBack+ Credit Card",null,null],["HDFC MoneyBack Credit Card",null,null],["IndianOil HDFC Credit Card",null,null],["Tata Neu Plus HDFC Credit Card",null,null],["Tata Neu Infinity HDFC Credit Card",null,null],["Swiggy HDFC Credit Card",null,null],["Swiggy Ornge HDFC Credit Card",null,null],["Swiggy BLCK HDFC Credit Card",null,null],["HDFC Regalia Gold Credit Card",null,null],["HDFC Regalia Credit Card",null,null],["HDFC Regalia First Credit Card",null,null],["HDFC Regalia Activ Credit Card",null,null],["HDFC INFINIA Metal Credit Card",null,"By Invite Only"],["HDFC Diners Club Black Credit Card",null,null],["HDFC Diners Club Privilege Credit Card",null,null],["HDFC Diners Club Premium Credit Card",null,null],["HDFC Diners Club Rewardz Credit Card",null,null],["HDFC Diners ClubMiles Credit Card",null,null],["Marriott Bonvoy HDFC Credit Card",null,null],["IRCTC HDFC Credit Card",null,null],["Shoppers Stop HDFC Credit Card",null,null],["Shoppers Stop Black HDFC Credit Card",null,null],["PhonePe HDFC Ultimo Credit Card",null,null],["PhonePe HDFC Uno Credit Card",null,null],["HDFC All Miles Credit Card",null,null],["HDFC Bharat Credit Card",null,null],["HDFC Doctor's Regalia Credit Card",null,null],["HDFC Doctors Superia Credit Card",null,null],["JetPrivilege HDFC Credit Card",null,null],["HDFC Platinum Edge Credit Card",null,null],["HDFC Platinum Plus Credit Card",null,null],["HDFC Solitaire Credit Card",null,null],["HDFC Superia Credit Card",null,null],["HDFC Teachers Platinum Credit Card",null,null],["HDFC Titanium Edge Credit Card",null,null],["HDFC Visa Signature Credit Card",null,null],["HDFC World MasterCard Credit Card",null,null],["InterMiles HDFC Diners Credit Card",null,null],["InterMiles HDFC Signature Credit Card",null,null],["InterMiles HDFC Platinum Credit Card",null,null],["Pine Labs HDFC Credit Card",null,null]],
+icici:[["ICICI 1838 Reserve Credit Card",null,"Invite Only"],["ICICI Times Black Credit Card",null,null],["ICICI Emeralde Credit Card",null,null],["ICICI Sapphiro Credit Card",null,null],["ICICI Rubyx Credit Card",null,null],["ICICI Coral Credit Card",null,null],["ICICI Platinum Chip Credit Card",null,null],["Adani One Signature ICICI Credit Card",null,null],["Adani One Platinum ICICI Credit Card",null,null],["MakeMyTrip ICICI Credit Card",null,null],["Emirates Skywards Emeralde ICICI Credit Card",null,null],["Emirates Skywards Sapphiro ICICI Credit Card",null,null],["Emirates Skywards Rubyx ICICI Credit Card",null,null],["Amazon Pay ICICI Credit Card",null,null],["ICICI HPCL Super Saver Credit Card",null,null],["ICICI HPCL Coral Credit Card",null,null],["ICICI Expressions Credit Card",null,null],["MakeMyTrip Signature ICICI Credit Card",null,null],["MakeMyTrip Platinum ICICI Credit Card",null,null],["Chennai Super Kings ICICI Credit Card",null,null],["ICICI Parakram Select Credit Card",null,null],["ICICI Parakram Credit Card",null,null]],
+axis:[["Axis PRIVILEGE Credit Card",0,null],["Axis Neo Credit Card",0,null],["Axis My Zone Credit Card",0,null],["IndiGo Axis Credit Card",799,null],["Flipkart Axis Credit Card",500,null],["Axis REWARDS Credit Card",1000,null],["Axis HORIZON Credit Card",3000,null],["IndiGo Premium Axis Credit Card",5000,null],["IndianOil Axis Credit Card",500,null],["Axis Select Credit Card",3000,null],["Scapia Axis Credit Card",0,null],["Axis MAGNUS Credit Card",12500,null],["Axis ACE Credit Card",499,null],["LIC Axis RuPay Credit Card",0,null],["Google Pay Flex Axis Credit Card",0,null],["Axis Reserve Credit Card",50000,null],["Axis My Zone Easy Credit Card",0,null],["Airtel Axis Credit Card",500,null],["Axis Cashback Credit Card",1000,null],["IndianOil Easy Axis Credit Card",0,null],["Axis Privilege Easy Credit Card",1500,null],["Axis Atlas Credit Card",5000,null],["Axis AURA Credit Card",749,null],["IndianOil Premium Axis Credit Card",1000,null],["Axis Pride Platinum Credit Card",250,null],["Axis Pride Signature Credit Card",500,null],["Flipkart Super Elite Axis Credit Card",500,null],["SpiceJet Voyage Black Axis Credit Card",2000,null],["Samsung Infinite Axis Credit Card",5000,null],["Fibe Axis Credit Card",0,null],["Shoppers Stop Axis Credit Card",500,null],["SpiceJet Voyage Axis Credit Card",750,null],["Samsung Signature Axis Credit Card",500,null],["Axis Miles and More Credit Card",3500,null],["Freecharge Axis Credit Card",250,null],["Freecharge Plus Axis Credit Card",0,null],["LIC Signature Axis Credit Card",0,null],["LIC Platinum Axis Credit Card",0,null],["Axis Vistara Signature Credit Card",3000,null],["Axis Vistara Credit Card",1500,null],["Axis Kwik Credit Card",0,null],["Axis Vistara Infinite Credit Card",10000,null],["Supermoney RuPay Axis Credit Card",500,null]],
+bob:[["BOBCARD ETERNA",null,null],["BOBCARD Etihad Guest Premium",null,null],["BOBCARD Etihad Guest",null,null],["BOBCARD PREMIER",null,null],["BOBCARD TIARA",null,null],["BOBCARD Cashback",null,null],["BOBCARD EASY",null,null],["BOBCARD Micro Enterprise",null,"Business"],["BOBCARD CORPORATE",null,"Business"],["BOBCARD EMPOWER",null,null],["BOBCARD SELECT",null,null],["SNAPDEAL BOBCARD",null,null],["BOBCARD HPCL ENERGIE",null,null],["IRCTC BOBCARD",null,null],["BOBCARD Scapia",null,"Partner"],["BOBCARD Uni GoldX",null,"Lifetime Free"],["BOBCARD One",null,null],["BOBCARD PRAGATI",null,"Partner"],["Nainital Bank RENAISSANCE BOBCARD",null,"Partner"],["BOBCARD PRIME",null,"Lifetime Free"],["ICAI Exclusive BOBCARD",null,"Professional"],["ICSI DIAMOND BOBCARD",null,"Professional"],["CMA ONE BOBCARD",null,"Professional"],["Indian Army YODDHA BOBCARD",null,"Defence"],["BOBCARD VIKRAM",null,"Lifetime Free"],["Indian Navy VARUNAH BOBCARD",null,"Defence"],["Indian Coast Guard RAKSHAMAH BOBCARD",null,"Defence"],["Assam Rifles SENTINEL BOBCARD",null,"Defence"],["BOBCARD PM SVANidhi",null,"Lifetime Free"],["UJJIVAN SFB Elite BOBCARD",null,"Partner"],["UJJIVAN SFB Platinum BOBCARD",null,"Partner"]],
+kotak:[["Kotak Cashback+ Credit Card",750,null],["Kotak Air Credit Card",999,null],["Kotak League Platinum Credit Card",0,null],["Kotak Air+ Credit Card",3000,null],["IndianOil Kotak Credit Card",449,null],["PVR INOX Kotak Credit Card",499,null],["IndiGo Kotak Credit Card",0,null],["IndiGo Kotak Premium Credit Card",3000,null],["Kotak White Reserve Credit Card",12500,null],["Kotak Private Credit Card",null,"By Invitation"],["Kotak Solitaire Credit Card",null,"By Invitation"],["Kotak UPI RuPay Credit Card",0,null],["Kotak White Credit Card",3000,null],["Kotak Zen Credit Card",1500,null],["Kotak NRI Royale Signature Credit Card",1000,null],["Kotak Purchase Credit Card",0,null],["Kotak Infinite Credit Card",0,null],["811 Kotak Credit Card",500,null],["811 Dream Different Kotak Credit Card",0,null],["Kotak Cashback+ Prime Credit Card",750,null],["Kotak Air+ Prime Credit Card",3000,null],["Kotak Biz Edge Credit Card",999,"Business"],["Kotak Biz Credit Card",499,"Business"],["Kotak Corporate Platinum Credit Card",0,"Business"],["Kotak Corporate Gold Credit Card",1000,"Business"],["Kotak Corporate Wealth Signature Credit Card",0,"Business"],["Kotak Solitaire Business Credit Card",null,"Business"]],
+rbl:[["RBL LUMIÈRE Credit Card",null,"Invite Only"],["RBL NOVA Credit Card",null,"Invite Only"],["IRCTC RBL Credit Card",null,null],["RBL Shoppers Stop Gold Credit Card",null,null],["RBL Shoppers Stop Platinum Credit Card",null,null],["RBL Shoppers Stop Black Credit Card",null,null],["IndianOil RBL XTRA Credit Card",null,null],["IndianOil RBL Credit Card",null,null],["RBL Jalsa Credit Card",null,null],["RBL Aspire Banking Credit Card",null,null],["RBL Signature Banking Credit Card",null,null],["RBL Apex Credit Card",null,null],["RBL World Safari Plus Credit Card",null,null],["RBL World Safari Lite Credit Card",null,null],["RBL World Safari Credit Card",null,null],["RBL Icon Credit Card",null,null],["RBL QuickPay Credit Card",null,"UPI"],["RBL iGlobe Credit Card",null,null],["RBL Platinum Maxima Plus Credit Card",null,null],["RBL Platinum Maxima Credit Card",null,null],["RBL Platinum Delight Credit Card",null,null],["RBL Shoprite Credit Card",null,null],["RBL Cookies Credit Card",null,null],["RBL Play Credit Card",null,null],["RBL SalarySe UP Credit Card",null,null],["TVS Credit RBL Gold Credit Card",null,"Partner"],["TVS Credit RBL Credit Card",null,"Partner"],["DMI Finance RBL Credit Card",null,"Partner"],["Patanjali Vishisht RBL Credit Card",null,"Partner"],["Patanjali Swarn RBL Credit Card",null,"Partner"],["Bankbazaar SaveMax RBL Credit Card",null,"Partner"],["Bankbazaar SaveMax Pro RBL Credit Card",null,"Partner"],["MoneyTap Black RBL Credit Card",null,"Partner"],["MoneyTap RBL Credit Card",null,"Partner"],["Paisabazaar Duet RBL Credit Card",null,"Partner"],["Paisabazaar Duet Plus RBL Credit Card",null,"Partner"],["RBL Insignia Preferred Credit Card",null,null],["RBL Monthly Treats Credit Card",null,null],["RBL Popcorn Credit Card",null,null],["RBL Movies and More Credit Card",null,null],["RBL Blockbuster Credit Card",null,null],["RBL Titanium Delight Credit Card",null,null],["RBL Fun+ Credit Card",null,null],["RBL MoCash Credit Card",null,null],["RBL Platinum LifeEasy Credit Card",null,null],["RBL Platinum Edge Credit Card",null,null],["RBL Platinum ShopDaily Credit Card",null,null],["RBL Platinum Plus Credit Card",null,null],["RBL World Prime Credit Card",null,null],["RBL Platinum TravelEasy Credit Card",null,null],["RBL Platinum ShopSmart Credit Card",null,null],["RBL Platinum ValuePlus Credit Card",null,null],["RBL Platinum Max Credit Card",null,null],["RBL World Max Credit Card",null,null],["RBL Platinum Classic Credit Card",null,null],["RBL Platinum Prime Credit Card",null,null],["RBL Platinum Bonus Credit Card",null,null],["RBL Platinum Shopgain Credit Card",null,null],["RBL Binge Credit Card",null,null],["RBL MyFirst Credit Card",null,null],["RBL EasySaver Credit Card",null,null],["RBL Platinum Advantage Credit Card",null,null],["RBL World Plus Credit Card",null,null],["RBL Platinum Choice Credit Card",null,null]],
+idfc:[["IDFC FIRST Millennia Credit Card",0,null],["IDFC FIRST Classic Credit Card",0,null],["IDFC FIRST Select Credit Card",0,null],["IDFC FIRST Wealth Credit Card",0,null],["IDFC FIRST WOW! Credit Card",0,null],["IDFC FIRST Quantum+ Credit Card",0,null],["IDFC FIRST LIC Classic Credit Card",0,null],["IDFC FIRST LIC Select Credit Card",0,null],["IDFC FIRST Digital RuPay Credit Card",199,null],["IDFC FIRST Power Credit Card",199,null],["IDFC FIRST EA₹N Credit Card",499,null],["IDFC FIRST Power+ Credit Card",499,null],["IDFC FIRST SWYP Credit Card",499,null],["IDFC FIRST WOW! Black Credit Card",750,null],["IDFC FIRST Hello Cashback Credit Card",1000,null],["IDFC FIRST Ashva Credit Card",2999,null],["IDFC FIRST Diamond Reserve Credit Card",3000,null],["Club Vistara IDFC FIRST Credit Card",4999,null],["IndiGo IDFC FIRST Credit Card",4999,null],["IDFC FIRST Mayura Credit Card",5999,null],["IDFC FIRST Gaj Credit Card",12500,null],["IDFC FIRST Private Credit Card",25000,null],["IDFC FIRST Business Max Credit Card",0,"Business"],["IDFC FIRST Business Credit Card",0,"Business"],["IDFC FIRST Business Multiplier Credit Card",null,"Business"],["IDFC FIRST Micro Enterprise Credit Card",null,"Business"],["IDFC FIRST Corporate Credit Card",0,"Business"],["IDFC FIRST Purchase Credit Card",0,"Business"]],
+yesbank:[["YES PRIVATE Credit Card",10000,null],["YES MARQUEE Credit Card",4999,null],["YES RESERV Credit Card",2499,null],["YES Elite+ Credit Card",999,null],["YES ACE Credit Card",499,null],["YES Select Credit Card",599,null],["YES RuPay Credit Card",0,null],["YES Klick Credit Card",0,null],["Paisabazaar Paisasave RuPay YES Credit Card",0,"Partner"],["FinBooster YES Credit Card",0,"Partner"],["Paisabazaar Paisasave YES Credit Card",499,"Partner"],["YES POP-CLUB Credit Card",399,"Partner"],["ANQ Phi YES Credit Card",499,"Partner"],["UNI YES Credit Card",499,"Partner"],["YES Zagg Credit Card",0,"Partner"],["YES BYOC Credit Card",null,"₹49/month"],["YES Wellness Plus Credit Card",1499,null],["YES Wellness Credit Card",499,null],["YES EMI Credit Card",499,null],["YES Prosperity Business Credit Card",499,"Business"],["YES First Business Credit Card",999,"Business"],["UNI RuPay YES Credit Card",0,"Partner"],["YES Essence Women's Credit Card",799,null],["YES Max Credit Card",0,null],["YES novio Credit Card",0,"Partner"],["YES novio RuPay Credit Card",0,"Partner"]],
+indusind:[["IndusInd EazyDiner Platinum Credit Card",null,null],["CRED IndusInd RuPay Credit Card",null,null],["IndusInd Jio-bp Mobility+ Credit Card",null,null],["IndusInd Solitaire Credit Card",null,null],["IndusInd Pioneer Private Credit Card",null,null],["IndusInd Platinum RuPay Credit Card",null,null],["IndusInd Samman Credit Card",null,null],["IndusInd ePay Amex Credit Card",null,null],["IndusInd Avios Visa Infinite Credit Card",null,null],["IndusInd EazyDiner Credit Card",null,null],["IndusInd Nexxt Credit Card",null,null],["IndusInd Legend Credit Card",null,null],["IndusInd Tiger Credit Card",null,null],["IndusInd Indulge Credit Card",null,null],["IndusInd Pioneer Heritage Credit Card",null,null],["IndusInd Pioneer Legacy Credit Card",null,null],["IndusInd Crest Credit Card",null,null],["IndusInd Celesta Credit Card",null,null],["IndusInd Pinnacle Credit Card",null,null],["IndusInd Platinum Visa Credit Card",null,null],["IndusInd Platinum Aura Edge Credit Card",null,null],["IndusInd Platinum Master Credit Card",null,null]],
+pnb:[["PNB Global Platinum Credit Card",null,null],["PNB Global Gold Credit Card",null,null],["PNB Global Classic Credit Card",null,null],["PNB RuPay Platinum Credit Card",null,"Fee NIL if used once a quarter"],["PNB RuPay Select Credit Card",null,"Fee NIL if used once a quarter"],["PNB RuPay Millennial Credit Card",null,null],["PNB Rakshak RuPay Platinum Credit Card",null,"No fee if used once a quarter"],["PNB Rakshak RuPay Select Credit Card",null,"No fee if used once a quarter"],["PNB Visa Signature Credit Card",null,null],["PNB Wave & Pay Credit Card",null,null],["Patanjali RuPay Select PNB Credit Card",null,"Partner"],["Patanjali RuPay Platinum PNB Credit Card",null,"Partner"]],
+canara:[["Canara Visa Signature Credit Card",null,null],["Canara RuPay Select Credit Card",null,null],["Canara MasterCard World Credit Card",null,null],["Canara Visa Platinum Credit Card",null,null],["Canara RuPay Select Secured Credit Card",null,"Secured / FD"],["Canara Mastercard Platinum Credit Card",null,null],["Canara Visa Corporate Credit Card",null,"Business"],["Canara RuPay Platinum Credit Card",null,null],["Canara Mastercard Gold Credit Card",null,null],["Canara Visa Gold Credit Card",null,null],["Canara RuPay Platinum Secured Credit Card",null,"Secured / FD"],["Canara Mastercard Gold Secured Credit Card",null,"Secured / FD"],["Canara Visa Gold Secured Credit Card",null,"Secured / FD"],["Canara RuPay Classic Credit Card",null,null],["Canara MasterCard Standard Credit Card",null,null],["Canara Visa Classic Credit Card",null,null]],
+union:[["Union Bank NEXTERIA Credit Card",null,null],["Union Unicorn RuPay Credit Card",null,null],["Union Bank DIVAA ICON Credit Card",null,null],["Union Bank PM SVANidhi Credit Card",null,null],["Union JCB Wellness Credit Card",null,"RuPay-JCB"],["Union Bank RuPay Select Credit Card",null,null],["Union JCB Health Credit Card",null,"RuPay-JCB"],["Union UNI-CARBON Credit Card",null,null],["Union Bank RuPay Platinum Credit Card",null,null],["Union Bank Visa Signature Credit Card",null,null],["Union Bank Visa Platinum Credit Card",null,null],["Union Bank Visa Gold Credit Card",null,null],["Union Sparsh Credit Card",null,null]],
+karur:[["KVB Eternis Credit Card",null,null],["KVB Alturas Credit Card",null,"Visa Infinite"],["KVB Samara Credit Card",null,"Visa Signature"],["KVB Oura Credit Card",null,"Visa Platinum"],["KVB Platinum Credit Card",null,null],["KVB Honour Credit Card",null,null],["KVB Corporate Credit Card",null,"Business"]],
+boi:[], cbi:[]
+};
+var CATS = [
+ {key:"shopping",label:"🛍️ Shopping",cls:"c-shop"},
+ {key:"dining",label:"🍔 Food & Dining",cls:"c-food"},
+ {key:"fuel",label:"⛽ Fuel & Transport",cls:"c-fuel"},
+ {key:"travel",label:"✈️ Travel",cls:"c-travel"},
+ {key:"everyday",label:"🧾 Everyday · bills & UPI",cls:"c-upi"}
+];
+var PRESETS = [
+ {name:"Amazon Shopper",emoji:"🛒",desc:"Everything from Amazon",cls:"c-shop",spends:[10000,2000,2000,1000,5000]},
+ {name:"Flipkart / Myntra",emoji:"👗",desc:"Sales & fashion first",cls:"c-flip",spends:[9000,3000,2000,3000,4000]},
+ {name:"Food Delivery",emoji:"🍔",desc:"Swiggy is my kitchen",cls:"c-food",spends:[3000,9000,1500,1000,5000]},
+ {name:"UPI Everything",emoji:"📱",desc:"Every payment by scan",cls:"c-upi",spends:[3000,3000,2000,1000,12000]},
+ {name:"Fuel Daily",emoji:"⛽",desc:"Long daily commute",cls:"c-fuel",spends:[3000,2000,12000,1000,4000]},
+ {name:"Travel Often",emoji:"✈️",desc:"Flights & hotels often",cls:"c-travel",spends:[5000,4000,3000,15000,5000]},
+ {name:"Student / First Card",emoji:"🎓",desc:"No salary slip? Start here",cls:"c-student",spends:[2000,1500,500,500,2000],income:"low"},
+ {name:"Family Bills",emoji:"🏠",desc:"I pay all house bills",cls:"c-bills",spends:[4000,3000,2500,1500,11000]}
+];
+var INCOME_MAP = {low:250000, mid:600000, high:1500000};
+var INCOME_LABEL = {low:"Below ₹3L", mid:"₹3–10L", high:"Above ₹12L"};
+
+/* ================= STATE ================= */
+var state = {
+  spends:[8000,4000,3000,3000,7000],
+  bankId:"sbi", presentId:"none", income:"mid", payFull:true,
+  results:null, verdict:null, finalCard:null, compareIds:[], comparePicks:[], defaultCompareIds:[],
+  upiExplore:false, upiAll:false, tierExplore:"all", tierAll:"all", openBanks:{}, studentProfile:false
+};
+
+/* ================= HELPERS ================= */
+function $(id){return document.getElementById(id);}
+function fmt(n){ n=Math.round(n); var s=(n<0?"-₹":"₹")+Math.abs(n).toLocaleString("en-IN"); return s; }
+function fmtPlain(n){ return Math.round(n).toLocaleString("en-IN"); }
+function bankById(id){ for(var i=0;i<BANKS.length;i++) if(BANKS[i].id===id) return BANKS[i]; if(BANK_FALLBACK[id]) return BANK_FALLBACK[id]; return null; }
+function logoTile(b, size){ if(!b) return ""; return '<span class="logo-tile '+(size||"")+'" style="background:'+b.color+'" aria-hidden="true">'+esc(b.ini)+'</span>'; }
+function isUpiName(name){ return /rupay/i.test(name) || /upi/i.test(name); }
+function normName(s){ return String(s).toLowerCase().replace(/credit card/g,"").replace(/[^a-z0-9]/g,""); }
+function cardById(id){ for(var i=0;i<CARDS.length;i++) if(CARDS[i].id===id) return CARDS[i]; return null; }
+function totalSpend(){ return state.spends.reduce(function(a,b){return a+b;},0); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+/* Fee tiers — by annual fee only; browsing/badges, never affects scoring */
+function tierOf(fee){
+  if(fee===null || fee===undefined) return null;
+  if(fee===0) return {key:"free", label:"₹0 FREE", cls:"tier-free"};
+  if(fee<=500) return {key:"light", label:"LIGHT", cls:"tier-light"};
+  if(fee<=1500) return {key:"premium", label:"PREMIUM", cls:"tier-premium"};
+  return {key:"super", label:"SUPER PREMIUM", cls:"tier-super"};
+}
+function tierBadgeHTML(fee){
+  var t=tierOf(fee); if(!t) return "";
+  return '<span class="badge '+t.cls+'">'+t.label+'</span>';
+}
+function tierMatches(fee, tierKey){
+  if(!tierKey || tierKey==="all") return true;
+  var t=tierOf(fee); if(!t) return false;
+  return t.key===tierKey;
+}
+
+/* ================= ENGINE (exact spec) ================= */
+function scoreCard(card){
+  var total = totalSpend();
+  var annualSpend = total*12;
+  var sum = 0;
+  for(var i=0;i<5;i++) sum += state.spends[i]*card.rates[i];
+  var monthlyRewards = Math.min(sum, card.cap);
+  var rewardsYear = monthlyRewards*12;
+  var effFee = (card.waiver>0 && annualSpend>=card.waiver) ? 0 : card.fee;
+  var interestCost = state.payFull ? 0 : total*(card.apr/100)*0.5;
+  var net = rewardsYear - effFee - interestCost;
+  return {card:card, monthlyRewards:monthlyRewards, rewardsYear:rewardsYear, effFee:effFee, interestCost:interestCost, net:net};
+}
+function runEngine(){
+  var userIncome = INCOME_MAP[state.income];
+  var scored = [];
+  for(var i=0;i<CARDS.length;i++){
+    var c = CARDS[i];
+    if(c.minInc<=userIncome || c.fd>0) scored.push(scoreCard(c));
+  }
+  scored.sort(function(a,b){return b.net-a.net;});
+  var best = scored[0]||null;
+  var present = null, ownBest = null;
+  for(var j=0;j<scored.length;j++){
+    if(state.presentId!=="none" && scored[j].card.id===state.presentId) present = scored[j];
+    if(scored[j].card.bank===state.bankId && !ownBest) ownBest = scored[j];
+  }
+  /* If present card was filtered out by income, still score it so the user sees its true position */
+  if(state.presentId!=="none" && !present){
+    var pc = cardById(state.presentId);
+    if(pc) present = scoreCard(pc);
+  }
+  var verdict, final;
+  if(present && best && (best.net-present.net)<=1000){ verdict="KEEP"; final=present; }
+  else if(ownBest && best && (best.net-ownBest.net)<=1000){ verdict="UPGRADE"; final=ownBest; }
+  else { verdict="SHIFT"; final=best; }
+  if(!present && ownBest && best && (best.net-ownBest.net)<=1000){ verdict="UPGRADE"; final=ownBest; }
+  state.results = scored; state.verdict = verdict; state.finalCard = final;
+  state.presentScored = present; state.ownBestScored = ownBest; state.bestScored = best;
+  var ids = [];
+  if(present) ids.push(present.card.id);
+  if(ownBest && (!present || ownBest.card.id!==present.card.id)) ids.push(ownBest.card.id);
+  if(best && ids.indexOf(best.card.id)===-1) ids.push(best.card.id);
+  while(ids.length<3 && scored.length>ids.length){ for(var k=0;k<scored.length;k++){ if(ids.indexOf(scored[k].card.id)===-1){ ids.push(scored[k].card.id); break; } } }
+  state.defaultCompareIds = ids.slice(0,3);
+  if(state.comparePicks && state.comparePicks.length){
+    state.compareIds = state.comparePicks.concat(state.defaultCompareIds.filter(function(x){return state.comparePicks.indexOf(x)===-1;})).slice(0,3);
+  } else {
+    state.compareIds = state.defaultCompareIds.slice();
+  }
+  return scored;
+}
+function topCatIdx(){
+  var m=0, idx=0;
+  for(var i=0;i<5;i++){ if(state.spends[i]>m){ m=state.spends[i]; idx=i; } }
+  return idx;
+}
+function scenarioLine(card){
+  var idx = topCatIdx();
+  var s = state.spends[idx];
+  var back = Math.round(s*card.rates[idx]);
+  if(idx===0) return "You spend "+fmt(s)+"/mo on shopping → "+fmt(back)+" back every month with this card.";
+  if(idx===1) return "You spend "+fmt(s)+"/mo on food orders (Swiggy/Zomato) → "+fmt(back)+" back every month with this card.";
+  if(idx===2) return "You spend "+fmt(s)+"/mo on fuel → "+fmt(back)+" back every month with this card.";
+  if(idx===3) return "Flights & hotels earn the top rate here + lounge benefits on travel cards.";
+  if(card.upi) return "Link this RuPay card to GPay/PhonePe → every UPI scan earns. Debit-card UPI earns ₹0.";
+  return "Groceries & bills on this card → cashback on every bill.";
+}
+function limitGuide(){
+  var t = totalSpend();
+  var line;
+  if(t<15000) line = "₹50,000 limit is enough for you";
+  else if(t<=40000) line = "₹50,000–₹1,00,000 limit is right for you";
+  else line = "₹1,00,000+ limit suits your heavy spending";
+  return line + ". A bigger limit is not free money.";
+}
+function mismatchNote(presentCard){
+  if(!presentCard) return "";
+  var bestIdx=0, bestRate=-1;
+  for(var i=0;i<5;i++){ if(presentCard.rates[i]>bestRate){ bestRate=presentCard.rates[i]; bestIdx=i; } }
+  var total = totalSpend();
+  if(total>0 && state.spends[bestIdx]/total < 0.10){
+    var top = topCatIdx();
+    var names=["shopping","food","fuel","travel","everyday spends"];
+    return "This card is strong for "+names[bestIdx]+", but you spend mostly on "+names[top]+".";
+  }
+  return "";
+}
+
+/* ================= NAV ================= */
+function show(view){
+  var views=["home","spend","result","compare","final","explore"];
+  for(var i=0;i<views.length;i++) $("view-"+views[i]).classList.toggle("active", views[i]===view);
+  var navs=document.querySelectorAll("[data-nav]");
+  for(var j=0;j<navs.length;j++) navs[j].classList.toggle("on", navs[j].getAttribute("data-nav")===view);
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-nav]").forEach(function(b){
+  b.addEventListener("click", function(){
+    var v=b.getAttribute("data-nav");
+    if((v==="result"||v==="compare") && !state.results) runEngine(), renderResult(), renderCompare();
+    if(v==="explore" && state.results) renderExplore();
+    show(v);
+  });
+});
+
+/* ================= HOME ================= */
+(function buildChips(){
+  var box=$("chips");
+  PRESETS.forEach(function(p, i){
+    var btn=document.createElement("button");
+    btn.type="button"; btn.className="chip "+p.cls;
+    btn.innerHTML='<span class="emoji">'+p.emoji+'</span><span class="t">'+esc(p.name)+'</span><span class="d">'+esc(p.desc)+'</span>';
+    btn.addEventListener("click", function(){
+      state.spends = p.spends.slice();
+      state.studentProfile = (p.name==="Student / First Card");
+      if(p.income) state.income = p.income;
+      syncSpendUI(); syncSegs();
+      runEngine(); renderResult(); renderCompare(); renderFinal();
+      show("result");
+    });
+    box.appendChild(btn);
+  });
+})();
+$("btn-manual").addEventListener("click", function(){ state.studentProfile=false; syncSpendUI(); show("spend"); });
+
+/* ================= SPEND FORM ================= */
+(function buildSpendRows(){
+  var box=$("spend-rows");
+  CATS.forEach(function(cat, i){
+    var div=document.createElement("div");
+    div.className="spend-card "+cat.cls;
+    div.innerHTML='<div class="row1"><label for="num-'+i+'">'+cat.label+'</label><div class="amt"><span>₹</span><input type="number" id="num-'+i+'" min="0" max="100000" step="500" inputmode="numeric"></div></div><input type="range" id="rng-'+i+'" min="0" max="30000" step="500" aria-label="'+cat.label+' per month">';
+    box.appendChild(div);
+  });
+  CATS.forEach(function(cat, i){
+    $("rng-"+i).addEventListener("input", function(){ setSpend(i, parseInt(this.value,10)||0, "rng"); });
+    $("num-"+i).addEventListener("input", function(){ setSpend(i, parseInt(this.value,10)||0, "num"); });
+    $("num-"+i).addEventListener("change", function(){ syncSpendUI(); });
+  });
+})();
+function setSpend(i, v, src){
+  v=Math.max(0, Math.min(100000, v||0));
+  state.spends[i]=v;
+  if(src!=="rng") $("rng-"+i).value=Math.min(30000,v);
+  if(src!=="num") $("num-"+i).value=v;
+  $("total-live").textContent = fmt(totalSpend());
+}
+function syncSpendUI(){
+  for(var i=0;i<5;i++){ $("rng-"+i).value=Math.min(30000,state.spends[i]); $("num-"+i).value=state.spends[i]; }
+  $("total-live").textContent = fmt(totalSpend());
+}
+(function buildBankSelect(){
+  var sel=$("bank-select");
+  BANKS.forEach(function(b){
+    var o=document.createElement("option"); o.value=b.id; o.textContent=b.name+(b.type==="public"?" · Govt":" · Private"); sel.appendChild(o);
+  });
+  var o2=document.createElement("option"); o2.value="none"; o2.textContent="Other bank"; sel.appendChild(o2);
+  sel.value=state.bankId;
+  sel.addEventListener("change", function(){ state.bankId=this.value; if(this.value==="none"){ state.presentId="none"; } buildPresentSelect(); syncBankPreview(); });
+})();
+function syncBankPreview(){
+  var box=$("bank-brand-preview"); if(!box) return;
+  var isOther = state.bankId==="none";
+  $("present-field").style.display = isOther ? "none" : "";
+  $("other-bank-note").style.display = isOther ? "" : "none";
+  if(isOther){ box.innerHTML=""; return; }
+  var b=bankById(state.bankId);
+  if(!b){ box.innerHTML=""; return; }
+  box.innerHTML='<div class="bank-head">'+logoTile(b,"sm")+'<span style="font-weight:900;font-size:14px">'+esc(b.name)+' · '+(b.type==="public"?"Government bank":"Private bank")+'</span></div>';
+}
+function buildPresentSelect(){
+  var sel=$("present-select");
+  sel.innerHTML="";
+  var o=document.createElement("option"); o.value="none"; o.textContent="I don't have a card"; sel.appendChild(o);
+  CARDS.forEach(function(c){
+    if(c.bank===state.bankId){ var op=document.createElement("option"); op.value=c.id; op.textContent=c.name; sel.appendChild(op); }
+  });
+  if(state.presentId!=="none" && !cardById(state.presentId)) state.presentId="none";
+  if(state.presentId!=="none" && cardById(state.presentId) && cardById(state.presentId).bank!==state.bankId) state.presentId="none";
+  sel.value=state.presentId;
+}
+$("present-select").addEventListener("change", function(){ state.presentId=this.value; });
+function syncSegs(){
+  document.querySelectorAll("#income-seg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-inc")===state.income); });
+  document.querySelectorAll("#pay-seg button").forEach(function(b){ b.classList.toggle("on", (b.getAttribute("data-pay")==="yes")===state.payFull); });
+}
+document.querySelectorAll("#income-seg button").forEach(function(b){
+  b.addEventListener("click", function(){ state.income=b.getAttribute("data-inc"); syncSegs(); });
+});
+document.querySelectorAll("#pay-seg button").forEach(function(b){
+  b.addEventListener("click", function(){ state.payFull=(b.getAttribute("data-pay")==="yes"); syncSegs(); });
+});
+$("btn-show").addEventListener("click", function(){
+  runEngine(); renderResult(); renderCompare(); renderFinal(); show("result");
+});
+$("btn-edit-spends").addEventListener("click", function(){ syncSpendUI(); buildPresentSelect(); show("spend"); });
+
+/* ================= RESULT ================= */
+function countUp(el, target){
+  var start=null, dur=900;
+  function step(ts){
+    if(!start) start=ts;
+    var p=Math.min(1,(ts-start)/dur);
+    var eased=1-Math.pow(1-p,3);
+    el.textContent=fmt(target*eased)+"/year";
+    if(p<1) requestAnimationFrame(step);
+  }
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){ el.textContent=fmt(target)+"/year"; return; }
+  requestAnimationFrame(step);
+}
+/* ================= CARD SHOWCASE (SBI-style presentation) ================= */
+var CAT_STYLE=[
+ {name:"Shopping",cls:"g-pink"},{name:"Food & Dining",cls:"g-yellow"},{name:"Fuel & Transport",cls:"g-blue"},{name:"Travel",cls:"g-lav"},{name:"Everyday & UPI",cls:"g-mint"}
+];
+function domCatIdx(card){
+  var bi=0,bv=-1,allSame=true,i;
+  for(i=0;i<5;i++){ if(card.rates[i]>bv){bv=card.rates[i];bi=i;} if(card.rates[i]!==card.rates[0]) allSame=false; }
+  if(allSame || bv<=0.01) return 4;
+  return bi;
+}
+function fmtPct(r){ return (Math.round(r*10000)/100)+"%"; }
+function cardHighlights(card){
+  var names=["shopping","food & dining","fuel","travel","everyday spends"];
+  var idxs=[0,1,2,3,4].filter(function(i){return card.rates[i]>=0.02;});
+  idxs.sort(function(a,b){return card.rates[b]-card.rates[a];});
+  var out=[];
+  idxs.forEach(function(i){
+    var line=fmtPct(card.rates[i])+" back on "+names[i];
+    if(card.cap<99999) line+=" (up to "+fmt(card.cap)+"/month)";
+    out.push(line);
+  });
+  if(card.fee===0) out.push("Lifetime free — no annual fee, ever");
+  if(card.upi) out.push("Link it to GPay/PhonePe — UPI payments earn too");
+  if(card.fd>0) out.push("FD-backed — no salary slip or income proof needed");
+  if(card.waiver>0) out.push("Fee becomes ₹0 when you spend "+fmt(card.waiver)+" in a year");
+  if(card.apr<=36) out.push("Low interest — "+card.apr+"%/year, gentler if you ever pay late");
+  if(!out.length) out.push(fmtPct(Math.max.apply(null,card.rates))+" back on your biggest spending");
+  return out;
+}
+function shortName(card){ return card.name.replace(/ Credit Card$/,"").replace(/ Card$/,""); }
+function catBadge(c){
+  if(c.fee===0) return "LIFETIME FREE";
+  if(c.upi) return "UPI READY";
+  return ["CASHBACK","FOOD & DINING","FUEL","TRAVEL","EVERYDAY"][domCatIdx(c)];
+}
+function resultBadge(s){
+  var c=s.card;
+  if(state.bestScored && c.id===state.bestScored.card.id) return {text:"BEST OVERALL", cls:"mint"};
+  if(state.presentScored && c.id===state.presentScored.card.id) return {text:"YOUR CARD", cls:""};
+  if(state.ownBestScored && c.id===state.ownBestScored.card.id) return {text:"YOUR BANK'S BEST", cls:""};
+  return {text:catBadge(c), cls:""};
+}
+var scUid=0;
+function showcaseHTML(scored, opts){
+  opts=opts||{};
+  var c=scored.card, b=bankById(c.bank);
+  var di=domCatIdx(c), cs=CAT_STYLE[di];
+  var isWinner = state.finalCard && c.id===state.finalCard.card.id;
+  var badge = opts.badge || {text:catBadge(c), cls:""};
+  var hl=cardHighlights(c);
+  var mis = (state.presentScored && c.id===state.presentScored.card.id) ? mismatchNote(c) : "";
+  var b1 = scored.net>=0 ? "Saves you <b>"+fmt(scored.net)+"/year</b> on your spends" : "Nets you <b>"+fmt(scored.net)+"/year</b> on your spends";
+  var bullets=[b1].concat(hl.slice(0,2).map(function(x){return esc(x);}));
+  /* Guarantee exactly 3 bullets with true facts from the card's own data */
+  var fallbacks=[];
+  if(c.waiver>0) fallbacks.push("Fee becomes ₹0 when you spend "+fmt(c.waiver)+" in a year");
+  fallbacks.push("Interest: "+c.apr+"% per year");
+  if(c.network==="RuPay") fallbacks.push("RuPay card — link it to UPI apps like GPay / PhonePe");
+  else fallbacks.push(c.network+" card — accepted in India and abroad");
+  if(c.fee===0) fallbacks.push("Lifetime free — no annual fee, ever");
+  for(var fi=0; fi<fallbacks.length && bullets.length<3; fi++){ if(bullets.join(" ").indexOf(fallbacks[fi])===-1) bullets.push(esc(fallbacks[fi])); }
+  bullets=bullets.slice(0,3);
+  var chips=[cs.name];
+  if(c.upi) chips.push("📱 UPI Ready");
+  if(c.fee===0) chips.push("Lifetime Free");
+  if(chips.indexOf(c.network)===-1) chips.push(c.network);
+  chips=chips.slice(0,3);
+  var feeTxt = c.fee===0 ? "Lifetime Free" : (scored.effFee===0 ? "₹0 at your spend" : fmt(scored.effFee));
+  var waves='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5.5 9.5a7 7 0 0 1 0 5"/><path d="M9.5 7a11 11 0 0 1 0 10"/><path d="M13.5 4.5a15.5 15.5 0 0 1 0 15"/></svg>';
+  var h='<div class="showcase'+(isWinner?" winner":"")+(opts.compact?" compact":"")+'">';
+  h+='<div class="img-panel"><span class="panel-badge'+(badge.cls?" "+badge.cls:"")+'">'+esc(badge.text)+'</span>';
+  h+='<div class="cc-visual '+cs.cls+(isWinner?" win-ring":"")+'" role="img" aria-label="'+esc(c.name)+' card visual, '+esc(c.network)+' network">'
+    +'<div class="cc-top"><span class="cc-bank">'+esc(b?b.name:"")+'</span><span class="cc-net">'+esc(c.network)+'</span></div>'
+    +'<div class="cc-mid"><span class="cc-chip"></span><span class="cc-waves">'+waves+'</span></div>'
+    +'<div class="cc-name">'+esc(shortName(c))+'</div><div class="cc-sub">Credit Card</div>'
+    +'</div><div class="cc-shadow"></div>';
+  if(!opts.headerOnly){
+    var checked = state.comparePicks.indexOf(c.id)!==-1;
+    h+='<label class="cmp-toggle"><input type="checkbox" data-cmp-toggle="'+c.id+'"'+(checked?" checked":"")+'> Add to compare</label>';
+  }
+  h+='</div>';
+  h+='<h3 class="sc-name">'+esc(c.name)+'</h3><div class="sc-bank">'+esc(b?b.name:"")+' · '+esc(c.category)+'</div>';
+  h+='<div class="badges" style="margin:8px 0 0">'+tierBadgeHTML(c.fee)+(c.upi || c.network==="RuPay" ? '<span class="badge upi">📱 UPI Ready</span>'+(c.upi?'<span class="badge">UPI earns '+fmtPct(c.rates[4])+' on everyday spends</span>':"") : "")+'</div>';
+  h+='<ul class="benefits">'+bullets.map(function(x){return '<li><span class="tick">✓</span><span>'+x+'</span></li>';}).join("")+'</ul>';
+  if(c.upi){
+    var upiEarn=Math.min(state.spends[4]*c.rates[4], c.cap)*12;
+    if(upiEarn>0) h+='<div class="upi-line">📱 UPI: link this RuPay card to GPay / PhonePe — your ₹'+fmtPlain(state.spends[4])+'/mo everyday UPI spends could earn ≈ '+fmt(upiEarn)+'/yr here. Debit-card UPI earns ₹0.</div>';
+    else h+='<div class="upi-line">📱 UPI: link this RuPay card to GPay / PhonePe — it earns '+fmtPct(c.rates[4])+' back on UPI & everyday scans. Debit-card UPI earns ₹0.</div>';
+  }
+  if(mis) h+='<p class="mismatch">⚠️ '+esc(mis)+'</p>';
+  h+='<hr class="dash">';
+  h+='<p class="kh-h">🎁 Key Highlights</p><div class="kh-chips">'+chips.map(function(x){return '<span class="kh-chip">'+esc(x)+'</span>';}).join("")+'</div>';
+  h+='<hr class="dash">';
+  h+='<div class="fee-bar"><span>Annual Fee: <b>'+feeTxt+'</b></span><span class="fee-int">Interest <b>'+c.apr+'%</b>/yr</span></div>';
+  if(!opts.headerOnly){
+    scUid++;
+    h+='<div class="btn-row2"><a class="apply-btn" href="'+esc(c.url)+'" target="_blank" rel="noopener">APPLY NOW →</a><button type="button" class="ben-btn" data-ben="'+scUid+'">SEE BENEFITS →</button></div>';
+    h+='<div class="detail-area" data-detail="'+scUid+'"><b>All benefits</b><ul>'
+      +hl.map(function(x){return '<li>✓ '+esc(x)+'</li>';}).join("")
+      +'</ul><p style="margin:8px 0 0">🎬 '+esc(scenarioLine(c))+'</p><p style="margin:6px 0 0">💳 '+esc(limitGuide())+'</p></div>';
+  }
+  h+='</div>';
+  return h;
+}
+function onCmpToggle(input){
+  var id=input.getAttribute("data-cmp-toggle");
+  var picks=state.comparePicks.slice();
+  if(input.checked){
+    if(picks.length>=3){ input.checked=false; return; }
+    picks.push(id);
+  } else {
+    picks=picks.filter(function(x){return x!==id;});
+  }
+  state.comparePicks=picks;
+  if(picks.length){
+    state.compareIds=picks.concat(state.defaultCompareIds.filter(function(x){return picks.indexOf(x)===-1;})).slice(0,3);
+  } else {
+    state.compareIds=state.defaultCompareIds.slice();
+  }
+  document.querySelectorAll("[data-cmp-toggle]").forEach(function(cb){
+    cb.checked = state.comparePicks.indexOf(cb.getAttribute("data-cmp-toggle"))!==-1;
+  });
+  renderCompare();
+}
+function wireShowcase(root){
+  if(!root) return;
+  root.querySelectorAll("[data-cmp-toggle]").forEach(function(cb){
+    cb.addEventListener("change", function(){ onCmpToggle(cb); });
+  });
+  root.querySelectorAll("[data-ben]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var det=root.querySelector('[data-detail="'+btn.getAttribute("data-ben")+'"]');
+      if(!det) return;
+      var open=det.classList.toggle("open");
+      btn.textContent = open ? "HIDE BENEFITS ↑" : "SEE BENEFITS →";
+    });
+  });
+}
+function bestUpiPick(){
+  if(!state.results) return null;
+  var upis=state.results.filter(function(s){ return s.card.upi || s.card.network==="RuPay"; });
+  if(!upis.length) return null;
+  upis.sort(function(a,b){ return b.net-a.net; });
+  return upis[0];
+}
+function renderResult(){
+  var best=state.bestScored;
+  countUp($("giant-num"), best?best.net:0);
+  var vp=$("result-verdict"); if(vp && state.verdict) vp.textContent=state.verdict;
+  $("result-warn").innerHTML = !state.payFull
+    ? '<div class="warn"><b>⚠️ First, the Minimum-Due trap</b><br>Bill ₹50,000, minimum due ₹2,500 — <b>₹1,750 is pure interest</b>, only ₹750 reduces your debt. Pay full, always. Below, low-interest cards score better for you because interest is counted in.</div>'
+    : "";
+  var h="";
+  if(state.presentScored) h+=showcaseHTML(state.presentScored,{badge:resultBadge(state.presentScored)});
+  if(state.ownBestScored && (!state.presentScored || state.ownBestScored.card.id!==state.presentScored.card.id)) h+=showcaseHTML(state.ownBestScored,{badge:resultBadge(state.ownBestScored)});
+  if(best && (!state.ownBestScored || best.card.id!==state.ownBestScored.card.id) && (!state.presentScored || best.card.id!==state.presentScored.card.id)) h+=showcaseHTML(best,{badge:resultBadge(best)});
+  $("result-cards").innerHTML=h;
+  wireShowcase($("result-cards"));
+  /* Best for UPI strip */
+  var upiHtml="";
+  if(state.spends[4]>0){
+    var pick=bestUpiPick();
+    if(pick){
+      var pc=pick.card;
+      var upiYear=Math.min(state.spends[4]*pc.rates[4], pc.cap)*12;
+      var line;
+      if(upiYear>0) line="Your "+fmt(state.spends[4])+"/mo everyday spends on UPI could earn ≈ "+fmt(upiYear)+"/yr here — debit-card UPI earns ₹0.";
+      else line="This RuPay pick earns "+fmtPct(pc.rates[4])+" back on UPI & everyday scans — link it to GPay/PhonePe and every scan earns. Debit-card UPI earns ₹0.";
+      upiHtml='<div class="upi-strip"><b>📱 Best for UPI — '+esc(pc.name)+'</b><p>'+esc(line)+'</p><p style="margin-top:4px">Saves '+fmt(pick.net)+'/yr overall · '+(pc.fee===0?"Lifetime free":"Fee "+fmt(pick.effFee)+"/yr")+' · <a href="'+esc(pc.url)+'" target="_blank" rel="noopener" style="color:var(--mint-bright);font-weight:900">View on bank site →</a></p></div>';
+    }
+  }
+  $("result-upi").innerHTML=upiHtml;
+  /* Student spotlight strip — only for the Student / First Card profile flow; never changes the recommendation */
+  var sliceBox=$("result-slice");
+  if(sliceBox){
+    if(state.studentProfile){
+      sliceBox.innerHTML='<div class="slice-strip"><b>🎓 Student favourite: slice UPI Credit Card — ₹0 fee · RuPay · Pay in 3 free</b><p>1% cashback (monies) on everyday spends · link to GPay / PhonePe and earn on UPI scans.</p><p style="font-size:12.5px;opacity:.85">You need a slice savings account (free, full KYC). Approval depends on Slice\'s checks — income details are asked, so approval is not guaranteed.</p><button type="button" id="btn-slice-view">View slice card →</button> <a href="https://slice.bank.in/credit-card" target="_blank" rel="noopener" style="color:#C4B5FD;font-weight:900;font-size:14px;margin-left:8px">Official site →</a></div>';
+      var sv=$("btn-slice-view");
+      if(sv) sv.addEventListener("click", function(){
+        show("explore");
+        setTimeout(function(){ var t=$("slice-spotlight-tile"); if(t) t.scrollIntoView({behavior:"smooth",block:"center"}); },80);
+      });
+    } else {
+      sliceBox.innerHTML="";
+    }
+  }
+  $("all-filter-all").classList.toggle("on", !state.upiAll);
+  $("all-filter-upi").classList.toggle("on", state.upiAll);
+  document.querySelectorAll("[data-tier-all]").forEach(function(btn){ btn.classList.toggle("on", btn.getAttribute("data-tier-all")===state.tierAll); });
+  var list="";
+  state.results.forEach(function(s){
+    if(state.upiAll && !(s.card.upi || s.card.network==="RuPay")) return;
+    if(!tierMatches(s.card.fee, state.tierAll)) return;
+    list+=showcaseHTML(s,{badge:{text:catBadge(s.card),cls:""},compact:true});
+  });
+  $("allcards-list").innerHTML=list || '<p class="sub">No cards in this fee tier match your filters yet — try All or another tier.</p>';
+  wireShowcase($("allcards-list"));
+}
+$("all-filter-all").addEventListener("click", function(){ state.upiAll=false; renderResult(); });
+$("all-filter-upi").addEventListener("click", function(){ state.upiAll=true; renderResult(); });
+document.querySelectorAll("[data-tier-all]").forEach(function(btn){
+  btn.addEventListener("click", function(){ state.tierAll=btn.getAttribute("data-tier-all"); renderResult(); });
+});
+$("btn-to-compare").addEventListener("click", function(){ renderCompare(); show("compare"); });
+
+/* ================= COMPARE ================= */
+function scoredFor(id){
+  if(state.results) for(var i=0;i<state.results.length;i++) if(state.results[i].card.id===id) return state.results[i];
+  var c=cardById(id); return c?scoreCard(c):null;
+}
+function renderCompare(){
+  if(!state.results) runEngine();
+  var ids=state.compareIds;
+  var cols=ids.map(scoredFor).filter(Boolean);
+  var winnerId = cols.reduce(function(w,s){ return (!w||s.net>w.net)?s:w; }, null);
+  var pk='<p class="kh-h">🎴 Choose any 3 cards</p>';
+  cols.forEach(function(s, ci){
+    var opts="";
+    CARDS.forEach(function(c){ opts+='<option value="'+c.id+'"'+(c.id===s.card.id?" selected":"")+'>'+esc(c.name)+'</option>'; });
+    pk+='<div class="field" style="margin-bottom:10px"><label for="cmp-pick-'+ci+'">Card '+(ci+1)+'</label><select id="cmp-pick-'+ci+'" data-col="'+ci+'" class="cmp-swap" aria-label="Choose card for column '+(ci+1)+'">'+opts+'</select></div>';
+  });
+  $("cmp-pickers").innerHTML=pk;
+  var maxNet=Math.max.apply(null, cols.map(function(s){return s.net;}));
+  var maxRew=Math.max.apply(null, cols.map(function(s){return s.rewardsYear;}));
+  var t='<tr><th style="width:22%"></th>';
+  cols.forEach(function(s){
+    var tags="";
+    if(s.net===maxNet) tags+='<span class="col-tag save">★ Best Savings</span>';
+    if(s.rewardsYear===maxRew) tags+='<span class="col-tag rew">Best Rewards</span>';
+    t+='<th class="'+(winnerId&&s.card.id===winnerId.card.id?"win":"")+'">'+tags+'<div class="cmp-name">'+esc(s.card.name)+'</div></th>';
+  });
+  t+='</tr>';
+  function row(label, fn, decider){
+    var r='<tr'+(decider?' class="decider"':"")+'><td><b>'+label+'</b></td>';
+    cols.forEach(function(s){ var isW=winnerId&&s.card.id===winnerId.card.id; r+='<td class="'+(isW?"win":"")+'">'+fn(s,isW)+'</td>'; });
+    return r+'</tr>';
+  }
+  t+=row("Fee / year", function(s){ return s.effFee===0?"₹0 😊":fmt(s.effFee); });
+  t+=row("Interest %", function(s){ return s.card.apr+"% / year"; });
+  t+=row("Rewards / year", function(s){ return fmt(s.rewardsYear); });
+  t+=row("YOU SAVE / year", function(s,isW){ return (isW?"★ ":"")+fmt(s.net); }, true);
+  t+=row("Network", function(s){ return '<span class="badge net">'+esc(s.card.network)+'</span>'; });
+  t+=row("UPI Ready", function(s){ return s.card.upi?"✅ Yes":"— No"; });
+  $("cmp-table").innerHTML=t;
+  document.querySelectorAll(".cmp-swap").forEach(function(sel){
+    sel.addEventListener("change", function(){
+      var ci=parseInt(this.getAttribute("data-col"),10);
+      state.compareIds[ci]=this.value; renderCompare();
+    });
+  });
+  var maxR=Math.max.apply(null, cols.map(function(s){return Math.max(s.rewardsYear,1);}));
+  var maxS=Math.max.apply(null, cols.map(function(s){return Math.max(s.net,1);}));
+  var bh='<div class="legend"><span><span class="dot rew"></span>Rewards / year</span><span><span class="dot save"></span>You save / year</span></div>';
+  cols.forEach(function(s){
+    bh+='<div class="bar-block"><div class="bl">'+esc(s.card.name)+'</div>'
+      +'<div class="bar-track"><div class="bar-fill rew" data-w="'+Math.max(2, s.rewardsYear/maxR*100)+'"></div></div><div class="bar-cap">Rewards '+fmt(s.rewardsYear)+'/year</div>'
+      +'<div class="bar-track"><div class="bar-fill save" data-w="'+Math.max(2, s.net/maxS*100)+'"></div></div><div class="bar-cap">You save '+fmt(s.net)+'/year</div></div>';
+  });
+  $("cmp-bars").innerHTML=bh;
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    document.querySelectorAll(".bar-fill").forEach(function(f){ f.style.width=f.getAttribute("data-w")+"%"; });
+  });});
+}
+$("btn-to-final").addEventListener("click", function(){ renderFinal(); show("final"); });
+
+/* ================= FINAL ================= */
+function heroShowcaseHTML(f){
+  var c=f.card, b=bankById(c.bank);
+  var cs=CAT_STYLE[domCatIdx(c)];
+  var hl=cardHighlights(c);
+  var b1 = f.net>=0 ? "Saves you <b>"+fmt(f.net)+"/year</b> on your spends" : "Nets you <b>"+fmt(f.net)+"/year</b> on your spends";
+  var bullets=[b1].concat(hl.slice(0,2).map(function(x){return esc(x);}));
+  var fallbacks=[];
+  if(c.waiver>0) fallbacks.push("Fee becomes ₹0 when you spend "+fmt(c.waiver)+" in a year");
+  fallbacks.push("Interest: "+c.apr+"% per year");
+  if(c.network==="RuPay") fallbacks.push("RuPay card — link it to UPI apps like GPay / PhonePe");
+  else fallbacks.push(c.network+" card — accepted in India and abroad");
+  for(var fi=0; fi<fallbacks.length && bullets.length<3; fi++){ if(bullets.join(" ").indexOf(fallbacks[fi])===-1) bullets.push(esc(fallbacks[fi])); }
+  bullets=bullets.slice(0,3);
+  var waves='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M5.5 9.5a7 7 0 0 1 0 5"/><path d="M9.5 7a11 11 0 0 1 0 10"/><path d="M13.5 4.5a15.5 15.5 0 0 1 0 15"/></svg>';
+  var h='<div class="hero-show">';
+  h+='<div class="bank-head" style="justify-content:center">'+logoTile(b,"lg")+'</div>';
+  h+='<div class="hero-name">'+esc(c.name)+'</div>';
+  h+='<div style="text-align:center;color:rgba(26,23,20,.62);font-weight:800;font-size:13px">'+esc(b?b.name:"")+' · '+esc(c.network)+' · '+esc(c.category)+'</div>';
+  h+='<div class="badges" style="justify-content:center;margin:8px 0 0">'+tierBadgeHTML(c.fee)+'</div>';
+  h+='<div class="hero-panel" style="margin-top:14px"><span class="panel-badge">YOUR FINAL CARD</span>'
+    +'<div class="cc-visual '+cs.cls+' win-ring" role="img" aria-label="'+esc(c.name)+' card visual, '+esc(c.network)+' network">'
+    +'<div class="cc-top"><span class="cc-bank">'+esc(b?b.name:"")+'</span><span class="cc-net">'+esc(c.network)+'</span></div>'
+    +'<div class="cc-mid"><span class="cc-chip"></span><span class="cc-waves">'+waves+'</span></div>'
+    +'<div class="cc-name">'+esc(shortName(c))+'</div><div class="cc-sub">Credit Card</div>'
+    +'</div><div class="cc-shadow"></div></div>';
+  h+='<div class="hero-save-lbl" style="margin-top:14px">You save every year</div><div class="hero-save">'+fmt(f.net)+'</div>';
+  h+='<ul class="benefits">'+bullets.map(function(x){return '<li><span class="tick" style="color:#1E7A3C">✓</span><span>'+x+'</span></li>';}).join("")+'</ul>';
+  if(c.network==="RuPay" || c.upi) h+='<div class="upi-line" style="color:#1A1714">📱 UPI Ready — link to GPay / PhonePe and earn on every scan. Debit-card UPI earns ₹0.</div>';
+  h+='</div>';
+  return h;
+}
+function renderFinal(){
+  if(!state.finalCard) runEngine();
+  var f=state.finalCard, c=f.card, b=bankById(c.bank);
+  var v=state.verdict;
+  var vWord = v==="KEEP"?"KEEP":(v==="UPGRADE"?"UPGRADE":"SHIFT");
+  var vSub = v==="KEEP" ? "Keep your present card — it is already right for you."
+    : v==="UPGRADE" ? "Upgrade inside your own bank — "+(b?b.name:"")
+    : "Shift to "+(b?b.name:"")+" — the extra money is worth it.";
+  var why=[];
+  why.push("It gives you <b>"+fmt(f.rewardsYear)+"</b> back every year on YOUR spending.");
+  if(f.effFee===0) why.push(c.fee===0 ? "Fee is <b>₹0 — lifetime free</b>. Nothing to pay, ever." : "Its "+fmt(c.fee)+" fee becomes <b>₹0</b> — your yearly spend crosses the waiver mark.");
+  else why.push("Fee is only <b>"+fmt(f.effFee)+"/year</b> — you still keep "+fmt(f.net)+" after paying it.");
+  if(state.presentScored && state.presentScored.card.id!==c.id){
+    var diff=f.net-state.presentScored.net;
+    why.push("That is <b>"+fmt(diff)+"/year more</b> than your present card ("+fmt(state.presentScored.net)+"/year).");
+  } else if(state.bestScored && v==="SHIFT"){
+    why.push("It beats every other card we checked — including your own bank's best.");
+  } else {
+    why.push("Interest is <b>"+c.apr+"%/year</b>"+(state.payFull?" — and you pay in full, so you pay ₹0 interest.":" — one of the lower rates, which matters when you don't pay in full."));
+  }
+  if(c.upi) why.push("It is <b>RuPay — link it to UPI</b> and every scan earns, unlike debit-card UPI (₹0 back).");
+  why=why.slice(0,3);
+  var h=heroShowcaseHTML(f);
+  h+='<div class="verdict '+v.toLowerCase()+'"><div class="vw">'+vWord+'</div><div class="vc">'+esc(vSub)+'</div></div>';
+  h+='<div class="why"><ul style="margin:0;padding-left:20px">'+why.map(function(w){return "<li>"+w+"</li>";}).join("")+'</ul></div>';
+  h+='<div class="info-card ic-scen"><b>🎬 In your real life</b>'+esc(scenarioLine(c))+'</div>';
+  h+='<div class="info-card ic-limit"><b>💳 Your right limit</b>'+esc(limitGuide())+'</div>';
+  h+='<div class="info-card ic-rule"><b>⏳ The 50-day rule</b>Pay by card today → money stays in your bank → pay the FULL bill within ~50 days → ₹0 interest, rewards stay yours. Pay late → interest starts, benefit lost.</div>';
+  if(!state.payFull) h+='<div class="warn"><b>⚠️ Minimum-Due trap:</b> Bill ₹50,000, minimum due ₹2,500 — ₹1,750 is pure interest, only ₹750 reduces your debt. Pay full, always.</div>';
+  h+='<a class="cta" href="'+esc(c.url)+'" target="_blank" rel="noopener">Apply on '+(b?esc(b.name):"Bank")+'\'s Official Site →</a>';
+  h+='<div class="btn-row"><button class="cta secondary small" id="btn-copy" type="button">📋 Copy my summary</button><button class="cta secondary small" id="btn-restart" type="button">↺ Start again</button></div>';
+  h+='<div class="toast" id="copy-toast">Copied! Paste it anywhere to share your result.</div>';
+  $("final-body").innerHTML=h;
+  $("btn-copy").addEventListener("click", function(){
+    var txt="My CardCompare answer: "+vWord+" — "+c.name+" ("+(b?b.name:"")+", "+c.network+"). I save "+fmt(f.net)+"/year. Fee "+(f.effFee===0?"₹0":fmt(f.effFee))+", interest "+c.apr+"%. "+scenarioLine(c)+" "+limitGuide();
+    function done(){ var t=$("copy-toast"); t.style.display="block"; setTimeout(function(){ t.style.display="none"; },2600); }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, done); }
+    else {
+      var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); }catch(e){}
+      document.body.removeChild(ta); done();
+    }
+  });
+  $("btn-restart").addEventListener("click", function(){ show("home"); });
+}
+
+/* ================= EXPLORE ================= */
+var exploreType="public";
+var CAT_GRAD=["g-pink","g-yellow","g-blue","g-lav","g-mint"];
+function catalogTileHTML(bank, entry, idx){
+  var name=entry[0], fee=entry[1], chip=entry[2];
+  var grad=CAT_GRAD[idx%CAT_GRAD.length];
+  var h='<div class="cat-tile"><div class="cat-visual '+grad+'"><span class="cv-bank">'+esc(bank.name)+'</span><span class="cv-name">'+esc(name)+'</span></div>';
+  h+='<div class="cat-info"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="cat-name">'+esc(name)+'</span><span class="cat-label">Catalog</span></div>';
+  if(fee!==null && fee!==undefined) h+='<div class="cat-fee">Annual fee: '+(fee===0?"₹0 — Lifetime Free":fmt(fee))+'</div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">';
+  if(fee!==null && fee!==undefined) h+=tierBadgeHTML(fee);
+  if(chip) h+='<span class="kh-chip">'+esc(chip)+'</span>';
+  if(isUpiName(name)) h+='<span class="badge upi" style="margin:0">📱 UPI Ready</span>';
+  h+='</div>';
+  h+='<div style="margin-top:6px"><a class="cat-link" href="'+esc(bank.portal)+'" target="_blank" rel="noopener">View on bank site →</a></div>';
+  h+='</div></div>';
+  return h;
+}
+function catalogFor(bank){
+  var scoredNorms=CARDS.filter(function(c){return c.bank===bank.id;}).map(function(c){return normName(c.name);});
+  function keep(entry){
+    var n=normName(entry[0]);
+    for(var i=0;i<scoredNorms.length;i++){
+      var s=scoredNorms[i];
+      if(n===s) return false;
+      /* SBI scored names are short forms of catalog names */
+      if(bank.id==="sbi" && (n.indexOf("cashbacksbi")===0 || n.indexOf("simplyclick")===0 || n.indexOf("bpclsbi")===0 && n.indexOf("octane")>-1)) return false;
+    }
+    return true;
+  }
+  var main=(CATALOG[bank.id]||[]).filter(keep);
+  if(state.upiExplore) main=main.filter(function(e){ return isUpiName(e[0]); });
+  if(state.tierExplore!=="all") main=main.filter(function(e){ return tierMatches(e[1], state.tierExplore); });
+  var partner=null;
+  if(bank.id==="sbi"){
+    partner=(CATALOG.sbiPartner||[]).slice();
+    if(state.upiExplore) partner=partner.filter(function(e){ return isUpiName(e[0]); });
+    if(state.tierExplore!=="all") partner=partner.filter(function(e){ return tierMatches(e[1], state.tierExplore); });
+  }
+  return {main:main, partner:partner};
+}
+function renderExplore(){
+  $("tab-pub").classList.toggle("on", exploreType==="public");
+  $("tab-pri").classList.toggle("on", exploreType==="private");
+  $("filter-all").classList.toggle("on", !state.upiExplore);
+  $("filter-upi").classList.toggle("on", state.upiExplore);
+  document.querySelectorAll("[data-tier-exp]").forEach(function(btn){ btn.classList.toggle("on", btn.getAttribute("data-tier-exp")===state.tierExplore); });
+  $("upi-filter-note").style.display = state.upiExplore ? "" : "none";
+  var h="";
+  BANKS.filter(function(b){return b.type===exploreType;}).forEach(function(b){
+    var cards=CARDS.filter(function(c){return c.bank===b.id;});
+    var scoredShown = cards.slice();
+    if(state.upiExplore) scoredShown = scoredShown.filter(function(c){ return c.upi || c.network==="RuPay"; });
+    if(state.tierExplore!=="all") scoredShown = scoredShown.filter(function(c){ return tierMatches(c.fee, state.tierExplore); });
+    var cat=catalogFor(b);
+    var total = scoredShown.length + cat.main.length + (cat.partner?cat.partner.length:0);
+    var pending = (b.id==="boi" || b.id==="cbi");
+    h+='<div class="bank-tile"><div class="bank-head">'+logoTile(b)+'<h3>'+esc(b.name)+'</h3><span class="type-tag '+(b.type==="public"?"pub":"pri")+'">'+(b.type==="public"?"Govt":"Private")+'</span></div>';
+    if(pending){
+      h+='<div class="mini">Card catalog being verified — see the official page for the latest list.</div>';
+      h+='<div class="mini"><a href="'+esc(b.portal)+'" target="_blank" rel="noopener">Official cards page →</a></div>';
+    } else {
+      h+='<div class="mini">'+total+' cards listed · '+scoredShown.length+' scored for your spends · rest shown from the official catalog</div>';
+    }
+    h+='<button type="button" class="bank-toggle" data-bank-toggle="'+b.id+'">'+(state.openBanks[b.id]?"Hide cards ↑":"See all cards ↓")+'</button>';
+    h+='<div class="bank-body'+(state.openBanks[b.id]?" open":"")+'" data-bank-body="'+b.id+'">';
+    scoredShown.forEach(function(c){
+      var s=scoredFor(c.id);
+      if(s) h+=showcaseHTML(s,{badge:{text:catBadge(c),cls:""},compact:true});
+    });
+    if(cat.main.length){
+      h+='<p class="kh-h" style="margin-top:6px">📚 Full catalog — listed on the official site (not scored yet)</p>';
+      cat.main.forEach(function(e, i){ h+=catalogTileHTML(b, e, i); });
+    }
+    if(cat.partner && cat.partner.length){
+      h+='<p class="kh-h" style="margin-top:10px">🤝 SBI partnership cards</p>';
+      cat.partner.forEach(function(e, i){ h+=catalogTileHTML(b, e, i+2); });
+    }
+    if(!scoredShown.length && !cat.main.length && !(cat.partner&&cat.partner.length) && !pending){
+      h+='<p class="sub" style="margin-top:10px">'+(state.tierExplore!=="all" ? "No cards in this fee tier in this bank's list — try All or another tier." : "No UPI-ready cards in this bank's list.")+'</p>';
+    }
+    h+='</div></div>';
+  });
+  $("bank-list").innerHTML=h;
+  wireShowcase($("bank-list"));
+  document.querySelectorAll("[data-bank-toggle]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id=btn.getAttribute("data-bank-toggle");
+      state.openBanks[id]=!state.openBanks[id];
+      renderExplore();
+    });
+  });
+}
+$("tab-pub").addEventListener("click", function(){ exploreType="public"; renderExplore(); });
+$("tab-pri").addEventListener("click", function(){ exploreType="private"; renderExplore(); });
+$("filter-all").addEventListener("click", function(){ state.upiExplore=false; renderExplore(); });
+$("filter-upi").addEventListener("click", function(){ state.upiExplore=true; renderExplore(); });
+document.querySelectorAll("[data-tier-exp]").forEach(function(btn){
+  btn.addEventListener("click", function(){ state.tierExplore=btn.getAttribute("data-tier-exp"); renderExplore(); });
+});
+
+/* ================= INIT ================= */
+buildPresentSelect();
+syncBankPreview();
+syncSpendUI();
+syncSegs();
+runEngine();
+renderResult();
+renderCompare();
+renderFinal();
+renderExplore();
+</script>
+</body>
+</html>
