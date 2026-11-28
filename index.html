@@ -294,6 +294,16 @@ table.cmp select{font-size:13px;padding:8px;border-radius:10px;min-height:40px}
 .showcase.winner .upi-line{background:#D9FBE1;color:#1A1714}
 .showcase.winner .benefits .tick{color:#1E7A3C}
 .showcase.winner .mismatch{color:#7A2E0E}
+.seg-col{flex-direction:column}
+.mode-note{background:var(--mint-soft);border:2px solid var(--mint-bright);border-radius:var(--radius);padding:12px 16px;margin:12px 0;font-size:14px;line-height:1.5;font-weight:800}
+.gate{background:#FFE3E0;border:2px solid #D93A2B;border-radius:var(--radius);padding:14px 16px;margin:14px 0;font-size:14px;line-height:1.55}
+.gate b{font-family:'Baloo 2';font-size:16px}
+.badge.caution{background:#FFD6A5;color:#1A1714;border-color:transparent}
+.golden{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px 16px;margin:18px 0 6px}
+.golden ol{margin:8px 0 0;padding-left:22px}
+.golden li{margin:7px 0;font-size:14px;line-height:1.45}
+.checklist{background:var(--mint-soft);border:2px solid var(--mint-bright);border-radius:20px;padding:14px 16px;margin-bottom:12px;font-size:14.5px;line-height:1.6}
+.checklist b{font-family:'Baloo 2';font-size:15px;display:block;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -315,6 +325,23 @@ table.cmp select{font-size:13px;padding:8px;border-radius:10px;min-height:40px}
       <div class="why-card"><b>🎯 One clear answer</b><span>Not a list of 50 cards — the one card that saves you the most, in plain words.</span></div>
       <div class="why-card"><b>🔢 Real numbers</b><span>Fees and rates taken from official bank pages, scored on YOUR monthly spends.</span></div>
       <div class="why-card"><b>🤫 No spam</b><span>No sign-up, no calls, no CIBIL score. Nothing about you is ever asked.</span></div>
+    </div>
+    <div class="golden">
+      <h3 class="baloo" style="font-size:20px;margin:0">Our 12 Golden Rules</h3>
+      <ol>
+        <li>Customer priority rules the ranking</li>
+        <li>Safety before savings</li>
+        <li>No CIBIL, no jargon</li>
+        <li>One honest formula: rewards − fee − interest</li>
+        <li>Close enough? The cheaper card wins</li>
+        <li>Eligibility checked before recommending</li>
+        <li>Your bank first — but never trapped</li>
+        <li>Official bank data &amp; links only</li>
+        <li>Points counted at real value</li>
+        <li>Benefits are perks, not money</li>
+        <li>One card at a time for beginners</li>
+        <li>The 50-day rule: pay in full = ₹0 interest</li>
+      </ol>
     </div>
     <h3 class="baloo" style="font-size:20px;margin:18px 0 4px">How it works</h3>
     <ol class="steps">
@@ -357,8 +384,26 @@ table.cmp select{font-size:13px;padding:8px;border-radius:10px;min-height:40px}
         <button type="button" data-pay="no">Not always</button>
       </div>
     </div>
+    <div class="field">
+      <label>What matters most to you?</label>
+      <div class="seg seg-col" id="priority-seg">
+        <button type="button" data-priority="rewards" class="on">💰 Most rewards &amp; savings</button>
+        <button type="button" data-priority="zerofee">🆓 Zero annual fee</button>
+        <button type="button" data-priority="safety">🛡️ Lowest interest — safest</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="purpose-select">Why do you want a card?</label>
+      <select id="purpose-select">
+        <option value="first">First card</option>
+        <option value="everyday" selected>Everyday savings</option>
+        <option value="travel">Travel</option>
+        <option value="shopping">Online shopping</option>
+        <option value="history">Building credit history</option>
+      </select>
+    </div>
     <button class="cta" id="btn-show">Show My Card →</button>
-    <p class="foot-note">9 small answers. Nothing else is asked.</p>
+    <p class="foot-note">A few small answers. Nothing else is asked.</p>
   </section>
 
   <!-- ============ VIEW: RESULT ============ -->
@@ -562,8 +607,10 @@ var INCOME_LABEL = {low:"Below ₹3L", mid:"₹3–10L", high:"Above ₹12L"};
 var state = {
   spends:[8000,4000,3000,3000,7000],
   bankId:"sbi", presentId:"none", income:"mid", payFull:true,
+  priority:"rewards", purpose:"everyday",
   results:null, verdict:null, finalCard:null, compareIds:[], comparePicks:[], defaultCompareIds:[],
-  upiExplore:false, upiAll:false, tierExplore:"all", tierAll:"all", openBanks:{}, studentProfile:false
+  upiExplore:false, upiAll:false, tierExplore:"all", tierAll:"all", openBanks:{}, studentProfile:false,
+  bestOverallScored:null, safetyPick:null, modeLine:"", closeEnough:false, typicalInterest:0
 };
 
 /* ================= HELPERS ================= */
@@ -608,6 +655,48 @@ function scoreCard(card){
   var net = rewardsYear - effFee - interestCost;
   return {card:card, monthlyRewards:monthlyRewards, rewardsYear:rewardsYear, effFee:effFee, interestCost:interestCost, net:net};
 }
+function isSuperPremium(card){ var t=tierOf(card.fee); return t && t.key==="super"; }
+function purposeBlocksSuper(){ return state.purpose==="first" || state.purpose==="history"; }
+function pickWinner(list){
+  if(!list || !list.length) return null;
+  var pool = list.slice();
+  if(purposeBlocksSuper()){
+    var nonSuper = pool.filter(function(s){ return !isSuperPremium(s.card); });
+    if(nonSuper.length) pool = nonSuper;
+  }
+  if(state.priority==="zerofee"){
+    var free = pool.filter(function(s){ return s.card.fee===0; });
+    if(free.length){ free.sort(function(a,b){return b.net-a.net;}); return free[0]; }
+    pool.sort(function(a,b){return b.net-a.net;}); return pool[0];
+  }
+  if(state.priority==="safety"){
+    pool.sort(function(a,b){ if(a.card.apr!==b.card.apr) return a.card.apr-b.card.apr; return b.net-a.net; });
+    return pool[0];
+  }
+  /* rewards: top by net, then close-enough -> lower fee wins */
+  pool.sort(function(a,b){return b.net-a.net;});
+  var top = pool[0];
+  var cheaper = pool.filter(function(s){ return s.card.fee < top.card.fee && (top.net - s.net) <= 1000; });
+  if(cheaper.length){
+    cheaper.sort(function(a,b){ if(a.card.fee!==b.card.fee) return a.card.fee-b.card.fee; return b.net-a.net; });
+    return cheaper[0];
+  }
+  return top;
+}
+function safestPick(list){
+  if(!list || !list.length) return null;
+  var pool = list.slice();
+  if(purposeBlocksSuper()){
+    var ns = pool.filter(function(s){ return !isSuperPremium(s.card); });
+    if(ns.length) pool = ns;
+  }
+  pool.sort(function(a,b){
+    if(a.card.apr!==b.card.apr) return a.card.apr-b.card.apr;
+    if(a.card.fee!==b.card.fee) return a.card.fee-b.card.fee;
+    return b.net-a.net;
+  });
+  return pool[0];
+}
 function runEngine(){
   var userIncome = INCOME_MAP[state.income];
   var scored = [];
@@ -616,12 +705,16 @@ function runEngine(){
     if(c.minInc<=userIncome || c.fd>0) scored.push(scoreCard(c));
   }
   scored.sort(function(a,b){return b.net-a.net;});
-  var best = scored[0]||null;
-  var present = null, ownBest = null;
+  var bestOverall = scored[0]||null;
+  var best = pickWinner(scored);
+  state.closeEnough = false;
+  if(state.priority==="rewards" && best && bestOverall && best.card.id!==bestOverall.card.id) state.closeEnough = true;
+  var present = null;
   for(var j=0;j<scored.length;j++){
     if(state.presentId!=="none" && scored[j].card.id===state.presentId) present = scored[j];
-    if(scored[j].card.bank===state.bankId && !ownBest) ownBest = scored[j];
   }
+  var ownPool = scored.filter(function(s){ return s.card.bank===state.bankId; });
+  var ownBest = pickWinner(ownPool);
   /* If present card was filtered out by income, still score it so the user sees its true position */
   if(state.presentId!=="none" && !present){
     var pc = cardById(state.presentId);
@@ -632,8 +725,21 @@ function runEngine(){
   else if(ownBest && best && (best.net-ownBest.net)<=1000){ verdict="UPGRADE"; final=ownBest; }
   else { verdict="SHIFT"; final=best; }
   if(!present && ownBest && best && (best.net-ownBest.net)<=1000){ verdict="UPGRADE"; final=ownBest; }
+  /* Safety gate protected pick + typical interest cost */
+  state.safetyPick = safestPick(scored);
+  var typApr = bestOverall ? bestOverall.card.apr : 42;
+  state.typicalInterest = Math.round(totalSpend()*(typApr/100)*0.5);
+  /* Mode line */
+  state.modeLine = "";
+  if(state.priority==="zerofee" && bestOverall && best){
+    state.modeLine = "Best overall is "+bestOverall.card.name+" ("+fmt(bestOverall.card.fee)+"/yr fee). You picked zero fee, so here is your best ₹0-fee card.";
+  } else if(state.priority==="safety"){
+    state.modeLine = "Lowest interest first — if a month goes wrong, this card costs you the least.";
+  } else if(state.closeEnough){
+    state.modeLine = "Almost the same savings, lower fee — safer pick.";
+  }
   state.results = scored; state.verdict = verdict; state.finalCard = final;
-  state.presentScored = present; state.ownBestScored = ownBest; state.bestScored = best;
+  state.presentScored = present; state.ownBestScored = ownBest; state.bestScored = best; state.bestOverallScored = bestOverall;
   var ids = [];
   if(present) ids.push(present.card.id);
   if(ownBest && (!present || ownBest.card.id!==present.card.id)) ids.push(ownBest.card.id);
@@ -662,6 +768,41 @@ function scenarioLine(card){
   if(idx===3) return "Flights & hotels earn the top rate here + lounge benefits on travel cards.";
   if(card.upi) return "Link this RuPay card to GPay/PhonePe → every UPI scan earns. Debit-card UPI earns ₹0.";
   return "Groceries & bills on this card → cashback on every bill.";
+}
+function scenarioLineForIdx(card, idx){
+  var s = state.spends[idx];
+  var back = Math.round(s*card.rates[idx]);
+  if(idx===0) return "You spend "+fmt(s)+"/mo on shopping → "+fmt(back)+" back every month with this card.";
+  if(idx===1) return "You spend "+fmt(s)+"/mo on food orders (Swiggy/Zomato) → "+fmt(back)+" back every month with this card.";
+  if(idx===2) return "You spend "+fmt(s)+"/mo on fuel → "+fmt(back)+" back every month with this card.";
+  if(idx===3) return "You spend "+fmt(s)+"/mo on travel → flights & hotels earn here, plus lounge benefits on travel cards.";
+  if(card.upi) return "Link this RuPay card to GPay/PhonePe → every UPI scan earns. Debit-card UPI earns ₹0.";
+  return "Groceries & bills on this card → cashback on every bill. You spend "+fmt(s)+"/mo on everyday things.";
+}
+function purposeScenarioLine(card){
+  if(!card) return "";
+  if(state.purpose==="travel") return scenarioLineForIdx(card,3);
+  if(state.purpose==="shopping") return scenarioLineForIdx(card,0);
+  if(state.purpose==="everyday") return scenarioLineForIdx(card,4);
+  return "";
+}
+function needsEligibilityCaution(card){
+  var inc = INCOME_MAP[state.income]||0;
+  if(inc>=600000) return false;
+  var t=tierOf(card.fee);
+  return !!(t && (t.key==="premium" || t.key==="super"));
+}
+function cautionBadgeHTML(card){
+  if(!needsEligibilityCaution(card)) return "";
+  return '<span class="badge caution">⚠️ Premium card — banks usually ask for higher income for this one</span>';
+}
+function safetyGateHTML(){
+  if(state.payFull) return "";
+  var h='<div class="gate"><b>🛡️ Safety first — read this before your card</b><br>'
+    +"You said you may not pay the full bill. Interest can quietly eat all your rewards — about "+fmt(state.typicalInterest)+"/year on a typical card.";
+  if(state.priority==="rewards") h+="<br><b>You picked rewards, but with unpaid bills the interest costs more than the rewards earn.</b>";
+  h+="<br>If money is tight most months, waiting is also a smart choice — a card is optional, debt is not.</div>";
+  return h;
 }
 function limitGuide(){
   var t = totalSpend();
@@ -711,6 +852,7 @@ document.querySelectorAll("[data-nav]").forEach(function(b){
     btn.addEventListener("click", function(){
       state.spends = p.spends.slice();
       state.studentProfile = (p.name==="Student / First Card");
+      if(p.name==="Student / First Card") state.purpose="first";
       if(p.income) state.income = p.income;
       syncSpendUI(); syncSegs();
       runEngine(); renderResult(); renderCompare(); renderFinal();
@@ -781,6 +923,8 @@ $("present-select").addEventListener("change", function(){ state.presentId=this.
 function syncSegs(){
   document.querySelectorAll("#income-seg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-inc")===state.income); });
   document.querySelectorAll("#pay-seg button").forEach(function(b){ b.classList.toggle("on", (b.getAttribute("data-pay")==="yes")===state.payFull); });
+  document.querySelectorAll("#priority-seg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-priority")===state.priority); });
+  var ps=$("purpose-select"); if(ps) ps.value=state.purpose;
 }
 document.querySelectorAll("#income-seg button").forEach(function(b){
   b.addEventListener("click", function(){ state.income=b.getAttribute("data-inc"); syncSegs(); });
@@ -788,6 +932,10 @@ document.querySelectorAll("#income-seg button").forEach(function(b){
 document.querySelectorAll("#pay-seg button").forEach(function(b){
   b.addEventListener("click", function(){ state.payFull=(b.getAttribute("data-pay")==="yes"); syncSegs(); });
 });
+document.querySelectorAll("#priority-seg button").forEach(function(b){
+  b.addEventListener("click", function(){ state.priority=b.getAttribute("data-priority"); syncSegs(); });
+});
+$("purpose-select").addEventListener("change", function(){ state.purpose=this.value; if(this.value==="first") state.studentProfile=true; });
 $("btn-show").addEventListener("click", function(){
   runEngine(); renderResult(); renderCompare(); renderFinal(); show("result");
 });
@@ -888,7 +1036,7 @@ function showcaseHTML(scored, opts){
   }
   h+='</div>';
   h+='<h3 class="sc-name">'+esc(c.name)+'</h3><div class="sc-bank">'+esc(b?b.name:"")+' · '+esc(c.category)+'</div>';
-  h+='<div class="badges" style="margin:8px 0 0">'+tierBadgeHTML(c.fee)+(c.upi || c.network==="RuPay" ? '<span class="badge upi">📱 UPI Ready</span>'+(c.upi?'<span class="badge">UPI earns '+fmtPct(c.rates[4])+' on everyday spends</span>':"") : "")+'</div>';
+  h+='<div class="badges" style="margin:8px 0 0">'+tierBadgeHTML(c.fee)+cautionBadgeHTML(c)+(c.upi || c.network==="RuPay" ? '<span class="badge upi">📱 UPI Ready</span>'+(c.upi?'<span class="badge">UPI earns '+fmtPct(c.rates[4])+' on everyday spends</span>':"") : "")+'</div>';
   h+='<ul class="benefits">'+bullets.map(function(x){return '<li><span class="tick">✓</span><span>'+x+'</span></li>';}).join("")+'</ul>';
   if(c.upi){
     var upiEarn=Math.min(state.spends[4]*c.rates[4], c.cap)*12;
@@ -953,15 +1101,37 @@ function bestUpiPick(){
 }
 function renderResult(){
   var best=state.bestScored;
-  countUp($("giant-num"), best?best.net:0);
+  var displayNet = (!state.payFull && state.safetyPick) ? state.safetyPick.net : (best?best.net:0);
+  /* When safety gate is on, the protected pick leads, so the giant number follows it */
+  countUp($("giant-num"), displayNet);
   var vp=$("result-verdict"); if(vp && state.verdict) vp.textContent=state.verdict;
-  $("result-warn").innerHTML = !state.payFull
-    ? '<div class="warn"><b>⚠️ First, the Minimum-Due trap</b><br>Bill ₹50,000, minimum due ₹2,500 — <b>₹1,750 is pure interest</b>, only ₹750 reduces your debt. Pay full, always. Below, low-interest cards score better for you because interest is counted in.</div>'
-    : "";
+  var warnHtml = safetyGateHTML();
+  if(!state.payFull) warnHtml += '<div class="warn"><b>⚠️ The Minimum-Due trap</b><br>Bill ₹50,000, minimum due ₹2,500 — <b>₹1,750 is pure interest</b>, only ₹750 reduces your debt. Pay full, always.</div>';
+  if(state.modeLine) warnHtml += '<div class="mode-note">'+esc(state.modeLine)+'</div>';
+  if(purposeBlocksSuper()) warnHtml += '<div class="mode-note"><b>Start with ONE card.</b> Every application leaves a credit enquiry — one good card is enough to start.</div>';
+  var finScored = state.finalCard;
+  var pLine = finScored ? purposeScenarioLine(finScored.card) : "";
+  if(pLine) warnHtml += '<div class="info-card ic-scen" style="margin:12px 0"><b>🎬 In your real life</b>'+esc(pLine)+'</div>';
+  $("result-warn").innerHTML = warnHtml;
   var h="";
-  if(state.presentScored) h+=showcaseHTML(state.presentScored,{badge:resultBadge(state.presentScored)});
-  if(state.ownBestScored && (!state.presentScored || state.ownBestScored.card.id!==state.presentScored.card.id)) h+=showcaseHTML(state.ownBestScored,{badge:resultBadge(state.ownBestScored)});
-  if(best && (!state.ownBestScored || best.card.id!==state.ownBestScored.card.id) && (!state.presentScored || best.card.id!==state.presentScored.card.id)) h+=showcaseHTML(best,{badge:resultBadge(best)});
+  var shownIds = {};
+  function pushShow(scored, badge){
+    if(!scored || shownIds[scored.card.id]) return;
+    shownIds[scored.card.id]=true;
+    h+=showcaseHTML(scored,{badge:badge||resultBadge(scored)});
+  }
+  if(!state.payFull && state.safetyPick){
+    pushShow(state.safetyPick, {text:"🛡️ SAFEST FOR YOU", cls:"mint"});
+    h+='<p class="kh-h" style="margin:6px 0 10px">Best if you pay in full every month:</p>';
+    pushShow(state.presentScored);
+    pushShow(state.ownBestScored);
+    pushShow(best);
+    if(finScored && !shownIds[finScored.card.id]) pushShow(finScored);
+  } else {
+    pushShow(state.presentScored);
+    pushShow(state.ownBestScored);
+    pushShow(best);
+  }
   $("result-cards").innerHTML=h;
   wireShowcase($("result-cards"));
   /* Best for UPI strip */
@@ -981,7 +1151,7 @@ function renderResult(){
   /* Student spotlight strip — only for the Student / First Card profile flow; never changes the recommendation */
   var sliceBox=$("result-slice");
   if(sliceBox){
-    if(state.studentProfile){
+    if(state.studentProfile || state.purpose==="first"){
       sliceBox.innerHTML='<div class="slice-strip"><b>🎓 Student favourite: slice UPI Credit Card — ₹0 fee · RuPay · Pay in 3 free</b><p>1% cashback (monies) on everyday spends · link to GPay / PhonePe and earn on UPI scans.</p><p style="font-size:12.5px;opacity:.85">You need a slice savings account (free, full KYC). Approval depends on Slice\'s checks — income details are asked, so approval is not guaranteed.</p><button type="button" id="btn-slice-view">View slice card →</button> <a href="https://slice.bank.in/credit-card" target="_blank" rel="noopener" style="color:#C4B5FD;font-weight:900;font-size:14px;margin-left:8px">Official site →</a></div>';
       var sv=$("btn-slice-view");
       if(sv) sv.addEventListener("click", function(){
@@ -1090,7 +1260,7 @@ function heroShowcaseHTML(f){
   h+='<div class="bank-head" style="justify-content:center">'+logoTile(b,"lg")+'</div>';
   h+='<div class="hero-name">'+esc(c.name)+'</div>';
   h+='<div style="text-align:center;color:rgba(26,23,20,.62);font-weight:800;font-size:13px">'+esc(b?b.name:"")+' · '+esc(c.network)+' · '+esc(c.category)+'</div>';
-  h+='<div class="badges" style="justify-content:center;margin:8px 0 0">'+tierBadgeHTML(c.fee)+'</div>';
+  h+='<div class="badges" style="justify-content:center;margin:8px 0 0">'+tierBadgeHTML(c.fee)+cautionBadgeHTML(c)+'</div>';
   h+='<div class="hero-panel" style="margin-top:14px"><span class="panel-badge">YOUR FINAL CARD</span>'
     +'<div class="cc-visual '+cs.cls+' win-ring" role="img" aria-label="'+esc(c.name)+' card visual, '+esc(c.network)+' network">'
     +'<div class="cc-top"><span class="cc-bank">'+esc(b?b.name:"")+'</span><span class="cc-net">'+esc(c.network)+'</span></div>'
@@ -1125,12 +1295,21 @@ function renderFinal(){
   }
   if(c.upi) why.push("It is <b>RuPay — link it to UPI</b> and every scan earns, unlike debit-card UPI (₹0 back).");
   why=why.slice(0,3);
-  var h=heroShowcaseHTML(f);
+  var h=safetyGateHTML();
+  if(!state.payFull && state.safetyPick){
+    var sp=state.safetyPick;
+    h+='<div class="mode-note"><b>🛡️ Safest for you: '+esc(sp.card.name)+'</b> — interest '+sp.card.apr+'%/yr, fee '+(sp.card.fee===0?"₹0 (lifetime free)":fmt(sp.card.fee)+"/yr")+'. The card below is best if you pay in full every month.</div>';
+  }
+  if(state.modeLine) h+='<div class="mode-note">'+esc(state.modeLine)+'</div>';
+  if(purposeBlocksSuper()) h+='<div class="mode-note"><b>Start with ONE card.</b> Every application leaves a credit enquiry — one good card is enough to start.</div>';
+  h+=heroShowcaseHTML(f);
   h+='<div class="verdict '+v.toLowerCase()+'"><div class="vw">'+vWord+'</div><div class="vc">'+esc(vSub)+'</div></div>';
   h+='<div class="why"><ul style="margin:0;padding-left:20px">'+why.map(function(w){return "<li>"+w+"</li>";}).join("")+'</ul></div>';
-  h+='<div class="info-card ic-scen"><b>🎬 In your real life</b>'+esc(scenarioLine(c))+'</div>';
+  var finPurposeLine = purposeScenarioLine(c);
+  h+='<div class="info-card ic-scen"><b>🎬 In your real life</b>'+esc(finPurposeLine || scenarioLine(c))+'</div>';
   h+='<div class="info-card ic-limit"><b>💳 Your right limit</b>'+esc(limitGuide())+'</div>';
   h+='<div class="info-card ic-rule"><b>⏳ The 50-day rule</b>Pay by card today → money stays in your bank → pay the FULL bill within ~50 days → ₹0 interest, rewards stay yours. Pay late → interest starts, benefit lost.</div>';
+  h+='<div class="checklist"><b>✅ Stay safe — before you apply</b>✓ Apply only on the official bank website<br>✓ Never share your OTP with anyone<br>✓ Turn on auto-pay for the FULL bill amount<br>✓ Read the fee &amp; interest page (MITC) before you apply</div>';
   if(!state.payFull) h+='<div class="warn"><b>⚠️ Minimum-Due trap:</b> Bill ₹50,000, minimum due ₹2,500 — ₹1,750 is pure interest, only ₹750 reduces your debt. Pay full, always.</div>';
   h+='<a class="cta" href="'+esc(c.url)+'" target="_blank" rel="noopener">Apply on '+(b?esc(b.name):"Bank")+'\'s Official Site →</a>';
   h+='<div class="btn-row"><button class="cta secondary small" id="btn-copy" type="button">📋 Copy my summary</button><button class="cta secondary small" id="btn-restart" type="button">↺ Start again</button></div>';
